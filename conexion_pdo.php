@@ -1,8 +1,8 @@
 <?php
 $_servidor = "localhost";
 $_bd = "comiclook";
-$_usuario = "ADMIN";
-$_contrasena = "ADMIN";
+$_usuario = "admin";
+$_contrasena = "admin";
 
 try {
     $_conexion = new PDO(
