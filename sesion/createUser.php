@@ -56,8 +56,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         //Formato de fecha_registro
         $fecha_registro = date("Y-m-d");
         //Consulta sql
-        $sql = "INSERT INTO usuario (nombre, email, contrasena, fecha_registro, rol, nacionalidad) 
-                VALUES (:nombre, :email, :contrasena, :fecha_registro, :rol, :nacionalidad)";
+        $sql = "INSERT INTO usuario (nombre, email, contrasena, fecha_registro, rol) 
+                VALUES (:nombre, :email, :contrasena, :fecha_registro, :rol)";
         $consulta = $_conexion->prepare($sql);
         //Bindeo de parametros
         $consulta->bindParam(':nombre', $nombre, PDO::PARAM_STR);
@@ -65,7 +65,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $consulta->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
         $consulta->bindParam(':fecha_registro', $fecha_registro, PDO::PARAM_STR);
         $consulta->bindParam(':rol', 0, PDO::PARAM_INT); //Se pone como usuario normal al principio, luego en la base de datos se cambia
-        $consulta->bindParam(':nacionalidad', $tmp_nacionalidad, PDO::PARAM_STR);
         // Ejecutamos la consulta ya armada
         $consulta->execute();
         // Confirmamos la transacción
@@ -107,7 +106,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $mail->AltBody = "¡Hola " . $nombre . "! Bienvenido a ComicLook. Tu cuenta ha sido creada con el correo " . $email . ".";
         //Enviar el correo
         $mail->send();
-
+        //Por el momento se enviará a iniciar sesion por temas del rol
+        header("location: login.php");
     } catch(PDOException $e) {
         $_conexion->rollBack();
         $err_registro = "No se ha podido registrar al usuario";
@@ -124,7 +124,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 </head>
 <body>
     <form action="" method="POST" id="Formulario">
-
         <label for="nombre">Nombre</label>
         <input type="text" id="nombre" name="nombre">
         <?php 
@@ -149,5 +148,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <input type="submit" value="BotonReseteo" id="BotonReseteo">
         <input type="submit" value="BotonEnviar" id="BotonEnviar">
     </form>
+    <span>¿Tienes una cuenta?</span>
+    <a href="login.php">Iniciar sesión</a>
+    <footer>
+        Copyright
+    </footer>
 </body>
 </html>
