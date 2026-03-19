@@ -182,5 +182,7 @@ window.onload = function () {
         document.body.appendChild(contenedor);
 
     }
+
+    Formu.submit();
   };
 };
