@@ -1,13 +1,23 @@
--- Borrar base de datos si ya existe
+-- Borrar BBDD si ya existe (hosting)
+-- DROP SCHEMA IF EXISTS if0_41430615_comiclook;
+
+/*-- Borrar base de datos si ya existe (local)
 DROP SCHEMA IF EXISTS comiclook;
 
+-- Crear usuario (Local)
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost';
 FLUSH PRIVILEGES;
 
--- CREAR BBDD
+-- CREAR BBDD (local)
 CREATE DATABASE comiclook;
-USE comiclook;
+USE comiclook;*/
+
+-- Crear BBDD (hosting)
+/*
+CREATE SCHEMA if0_41430615_comiclook;
+USE if0_41430615_comiclook;
+*/
 
 /*--------TABLAS------*/
 -- Tabla de editoriales
@@ -22,6 +32,7 @@ CREATE TABLE autor(
 id INT PRIMARY KEY auto_increment,
 nombre VARCHAR(100),
 apellidos VARCHAR(100),
+email VARCHAR(255),
 num_obras INT
 );
 
@@ -30,10 +41,11 @@ CREATE TABLE usuario (
 id INT PRIMARY KEY auto_increment,
 nombre VARCHAR(255),
 email VARCHAR(255),
+FOREIGN KEY (email) REFERENCES autor(email),
 contrasena VARCHAR(150),
 fecha_registro DATE,
 rol INT,
-nacionalidad VARCHAR(150)
+img_perfil VARCHAR(255)
 );
 
 -- Tabla obra (comic, manga, libro)
@@ -80,11 +92,3 @@ estado BOOLEAN,
 fecha_inicio DATE,
 fecha_cancelacion DATE
 );
-
-
-
-
-
-
-
-
