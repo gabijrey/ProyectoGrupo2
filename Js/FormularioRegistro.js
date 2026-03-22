@@ -4,6 +4,7 @@ window.onload = function () {
   let Formu = document.getElementById("Formulario");
   let mensajeError = document.getElementsByClassName("FE");
   let errores;
+  let contenedor;
 
 
 
@@ -16,12 +17,20 @@ window.onload = function () {
       Formu.elements[i].value = "";
       Formu.elements[i].style.border = "";
     }
-
+    if (contenedor) {
+      document.body.removeChild(contenedor);
+      contenedor = null;
+    }
   };
 
   BotonEnviar.onclick = function (e) {
 
     e.preventDefault();
+
+    if (contenedor) {
+        document.body.removeChild(contenedor);
+        contenedor = null; // Muy importante para que JS sepa que ya no existe
+    }
 
     for (let i = 0; i < 3; i++) {
       Formu.elements[i].style.border = "";
@@ -37,9 +46,9 @@ window.onload = function () {
 
     //Primero quito los espacios...//
 
-    Fnombre.value.trim();
-    Femail.value.trim();
-    Fcontra.value.trim();
+    Formu.elements[0].value = Fnombre.value.trim();
+    Formu.elements[1].value = Femail.value.trim();
+    Formu.elements[2].value = Fcontra.value.trim();
 
 
 
@@ -143,7 +152,7 @@ window.onload = function () {
 
     // filtro longitud de contraseña //
 
-    if (Fcontra.value < 9) {
+    if (Fcontra.value.length < 9) {
       Fcontra.style.border = "5px solid red";
       errores += "El campo contraseña tiene que tener como minimo 9 caracteres... \n";
 
@@ -173,7 +182,7 @@ window.onload = function () {
     }
 
     if (errores != "") {
-        let contenedor = document.createElement("div");
+        contenedor = document.createElement("div");
         contenedor.textContent = errores;
         contenedor.style.whiteSpace = "pre-line"; // esto de aqui he mirado que es para que se respeten los saltos de linea c:
         contenedor.style.color = "red";
@@ -181,8 +190,8 @@ window.onload = function () {
         contenedor.style.border = "solid red 5px";
         document.body.appendChild(contenedor);
 
+    }else{
+      Formu.submit();
     }
-
-    Formu.submit();
   };
 };
