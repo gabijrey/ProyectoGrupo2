@@ -22,7 +22,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $tmp_nombre = htmlspecialchars($tmp_nombre); //Eliminar caracteres especiales
     if(strlen($tmp_nombre) < 5) $err_nombre = "El nombre debe tener más de 5 caracteres, vuelva a intentarlo.";
     else{
-        $nombre = $tmp_nombre;
+        //Confirmar que el usuario no existe en la base de datos
+        try{
+            $consulta = $_conexion->prepare("SELECT * FROM usuario WHERE nombre = $tmp_nombre");
+            $res = $_conexion->prepare($consulta);
+            if ($resultado->num_rows === 0) $nombre = $tmp_nombre;
+            else $err_nombre = "El usuario ya existe, pruebe a iniciar sesión. ";
+        }catch(PDOException $e) {
+            $e->getMessage();
+        }
     }
 
     //Validar mail
@@ -32,7 +40,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         try{
             $consulta = $_conexion->prepare("SELECT * FROM usuario WHERE email = $tmp_email");
             $res = $_conexion->prepare($consulta);
-            if ($res->rowCount() == 0) $email = $tmp_email;
+            if ($resultado->num_rows === 0) $email = $tmp_email;
             else $err_mail = "El usuario ya existe, pruebe a iniciar sesión. ";
         }catch(PDOException $e) {
             $e->getMessage();
@@ -119,7 +127,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Registro</title>
     <script src="../Js/js.js"></script>
 </head>
 <body>
