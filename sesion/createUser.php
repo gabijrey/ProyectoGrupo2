@@ -1,28 +1,55 @@
 <?php
+//Mostrar errores
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+    
+    
 
 //Archivos requeridos
 require "conexion_pdo.php";
-require 'vendor/autoload.php';
+// require 'vendor/autoload.php'; 
 
 //Clases a usar
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
+require 'PhpMailer/Exception.php';
+require 'PhpMailer/PHPMailer.php';
+require 'PhpMailer/SMTP.php';
 
 //Validar los datos
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
+    //Booleano para indicar que todo se valido correctamente
+    $validado = true;
     //Variables temporales a validar
     $tmp_nombre = $_POST["nombre"];
     $tmp_email = $_POST["email"];
     $tmp_contrasena = $_POST["contrasena"];
-    $tmp_nacionalidad = $_POST["nacionaliadad"];
+   // $tmp_nacionalidad = $_POST["nacionalidad"];
 
     //Validar nombre
     $tmp_nombre = htmlspecialchars($tmp_nombre); //Eliminar caracteres especiales
-    if(strlen($tmp_nombre) < 5) $err_nombre = "El nombre debe tener más de 5 caracteres, vuelva a intentarlo.";
+    if(strlen($tmp_nombre) < 5) {
+     $err_nombre = "El nombre debe tener más de 5 caracteres, vuelva a intentarlo.";
+     $validado = false;
+    } 
     else{
         $nombre = $tmp_nombre;
+        try{
+            $consulta = $_conexion->prepare("SELECT * FROM usuario WHERE nombre = ?");
+            //$res = $_conexion->prepare($consulta);
+            $consulta->execute([$tmp_nombre]);
+            if ($consulta->rowCount() === 0) $nombre = $tmp_nombre;
+            else {
+                $err_nombre = "El usuario ya existe, pruebe a iniciar sesión. ";
+                $validado = false;
+            } 
+        }catch(PDOException $e) {
+            $e->getMessage();
+        }
     }
 
     //Validar mail
@@ -30,27 +57,35 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if (filter_var($tmp_email, FILTER_VALIDATE_EMAIL)) {
         //Confirmar que el usuario no existe en la base de datos
         try{
-            $consulta = $_conexion->prepare("SELECT * FROM usuario WHERE email = $tmp_email");
-            $res = $_conexion->prepare($consulta);
-            if ($res->rowCount() == 0) $email = $tmp_email;
-            else $err_mail = "El usuario ya existe, pruebe a iniciar sesión. ";
+            $consulta = $_conexion->prepare("SELECT * FROM usuario WHERE email = ?");
+            $consulta->execute([$tmp_email]);
+            //$res = $_conexion->prepare($consulta);
+            if ($consulta->rowCount() == 0) $email = $tmp_email;
+            else {
+              $err_mail = "El correo ya existe, pruebe a iniciar sesión. ";
+                $validado = false;
+            } 
         }catch(PDOException $e) {
             $e->getMessage();
         }
     }else {
         $err_mail = "Formato de mail no aceptado, vuelva a intentarlo.";
+        $validado = false;
     }
-
+	
     //Validar la contraseña
     $tmp_contrasena = htmlspecialchars($tmp_contrasena);
     $patron = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).*$/';
     if (preg_match($patron, $tmp_contrasena)) {
         $contrasena = password_hash($tmp_contrasena, PASSWORD_DEFAULT);
-    } else $err_contrasena = "La contraseña no cumple los requisitos, vuelve a intentarlo.";
-
+    } else {
+       $err_contrasena = "La contraseña no cumple los requisitos, vuelve a intentarlo.";
+        $validado = false; //no se ha validado todo
+    }
+    
     //Insertar los datos en la base de datos
-    try {
-        $_conexion->beginTransaction();
+    if($validado && isset($nombre) && isset($email) && isset($contrasena)) {
+        try {
         //Consulta a insertar
         $_conexion->beginTransaction();
         //Formato de fecha_registro
@@ -60,11 +95,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 VALUES (:nombre, :email, :contrasena, :fecha_registro, :rol)";
         $consulta = $_conexion->prepare($sql);
         //Bindeo de parametros
-        $consulta->bindParam(':nombre', $nombre, PDO::PARAM_STR);
-        $consulta->bindParam(':email', $email, PDO::PARAM_STR);
-        $consulta->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
-        $consulta->bindParam(':fecha_registro', $fecha_registro, PDO::PARAM_STR);
-        $consulta->bindParam(':rol', 0, PDO::PARAM_INT); //Se pone como usuario normal al principio, luego en la base de datos se cambia
+        /*Lo he cambiado a bindValue porque para rol no funcionaba bindParam
+        ya que no permite pasar valores literales, habria que crear una variable inicial
+        pero por facilidad he visto mejor usar bindValue
+        */
+        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta->bindValue(':email', $email, PDO::PARAM_STR);
+        $consulta->bindValue(':contrasena', $contrasena, PDO::PARAM_STR);
+        $consulta->bindValue(':fecha_registro', $fecha_registro, PDO::PARAM_STR);
+        $consulta->bindValue(':rol', 0, PDO::PARAM_INT); //Se pone como usuario normal al principio, luego en la base de datos se cambia
         // Ejecutamos la consulta ya armada
         $consulta->execute();
         // Confirmamos la transacción
@@ -76,12 +115,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $mail->Host = 'smtp.gmail.com'; //Hay que usar el mail del servidor si es que hay
         $mail->SMTPAuth = true;
         $mail->Username = 'comiclook.info@gmail.com';
-        $mail->Password = 'Comiclook.26';
+        $mail->Password = 'mfjktuyyfcstohvr';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         $mail->isHTML(true); // Habilitar formato HTML
         $mail->CharSet = 'UTF-8'; 
-        $mail->setFrom('info@comiclook.com', 'ComicLook');
+        $mail->setFrom('comiclook.info@gmail.com', 'ComicLook');
         $mail->addAddress($email);
         $mail->Subject = '¡Bienvenido a ComicLook, ' . $nombre . '!';
         $mail->Body = "
@@ -91,7 +130,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <p>Tu cuenta ha sido creada exitosamente con los siguientes datos:</p>
                 <ul>
                     <li><strong>Usuario:</strong> " . $email . "</li>
-                    <li><strong>Nacionalidad registrada:</strong> " . $tmp_nacionalidad . "</li>
                 </ul>
                 <p>A partir de ahora, podrás acceder a nuestra plataforma y disfrutar de todo el contenido que tenemos preparado para ti.</p>
                 <br>
@@ -109,9 +147,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         //Por el momento se enviará a iniciar sesion por temas del rol
         header("location: login.php");
     } catch(PDOException $e) {
-        $_conexion->rollBack();
+        if ($_conexion->inTransaction()) {
+            $_conexion->rollBack();
+        }
         $err_registro = "No se ha podido registrar al usuario";
     }
+   }
+   
 }
 ?>
 <!DOCTYPE html>
@@ -119,7 +161,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Registro</title>
     <script src="../Js/js.js"></script>
 </head>
 <body>
@@ -139,13 +181,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         ?>
         <hr>
         <label for="contrasena" >Contraseña</label>
-        <input type="text" id="password" name="contrasena">
+        <input type="password" id="password" name="contrasena">
         <?php 
         if(isset($err_contrasena)) echo "<p class='FE'>$err_contrasena</p>" ;
         else echo "<p class='FE'></p>";
         ?>
         <hr>
-        <input type="submit" value="BotonReseteo" id="BotonReseteo">
+        <input type="reset" value="BotonReseteo" id="BotonReseteo">
         <input type="submit" value="BotonEnviar" id="BotonEnviar">
     </form>
     <span>¿Tienes una cuenta?</span>
