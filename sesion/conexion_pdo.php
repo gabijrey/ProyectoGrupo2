@@ -1,8 +1,15 @@
 <?php
-$_servidor = "localhost";
-$_bd = "comiclook";
-$_usuario = "admin";
-$_contrasena = "admin";
+//Datos en local
+// $_servidor = "localhost";
+// $_bd = "comiclook";
+// $_usuario = "admin";
+// $_contrasena = "admin";
+
+//Datos para el servidor de hosting
+$_servidor = 'sql201.infinityfree.com';
+$_usuario = 'if0_41430615';
+$_contrasena= '95MvF92CEM5U1AY';
+$_bd   = 'if0_41430615_comiclook';
 
 try {
     $_conexion = new PDO(
