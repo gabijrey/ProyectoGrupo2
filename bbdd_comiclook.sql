@@ -19,6 +19,19 @@ CREATE SCHEMA if0_41430615_comiclook;
 USE if0_41430615_comiclook;
 */
 
+/*Borrar las tablas una a una*/
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS obra_autor;
+DROP TABLE IF EXISTS resena;
+DROP TABLE IF EXISTS suscripcion;
+DROP TABLE IF EXISTS obra;
+DROP TABLE IF EXISTS usuario;
+DROP TABLE IF EXISTS autor;
+DROP TABLE IF EXISTS editorial;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
 /*--------TABLAS------*/
 -- Tabla de editoriales
 CREATE TABLE editorial(
@@ -38,9 +51,8 @@ num_obras INT
 
 -- Tabla usuario
 CREATE TABLE usuario (
-id INT PRIMARY KEY auto_increment,
-nombre VARCHAR(255),
-email VARCHAR(255),
+nombre VARCHAR(255) PRIMARY KEY,
+email VARCHAR(255) UNIQUE,
 FOREIGN KEY (email) REFERENCES autor(email),
 contrasena VARCHAR(150),
 fecha_registro DATE,
