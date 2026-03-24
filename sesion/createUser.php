@@ -33,8 +33,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     //Validar nombre
     $tmp_nombre = htmlspecialchars($tmp_nombre); //Eliminar caracteres especiales
     if(strlen($tmp_nombre) < 5) {
-     $err_nombre = "El nombre debe tener más de 5 caracteres, vuelva a intentarlo.";
-     $validado = false;
+        $err_nombre = "El nombre debe tener más de 5 caracteres, vuelva a intentarlo.";
+        $validado = false;
     } 
     else{
         $nombre = $tmp_nombre;
@@ -79,7 +79,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if (preg_match($patron, $tmp_contrasena)) {
         $contrasena = password_hash($tmp_contrasena, PASSWORD_DEFAULT);
     } else {
-       $err_contrasena = "La contraseña no cumple los requisitos, vuelve a intentarlo.";
+        $err_contrasena = "La contraseña no cumple los requisitos, vuelve a intentarlo.";
         $validado = false; //no se ha validado todo
     }
     
@@ -129,13 +129,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <p>Estamos muy emocionados de darte la bienvenida a <strong>ComicLook</strong>.</p>
                 <p>Tu cuenta ha sido creada exitosamente con los siguientes datos:</p>
                 <ul>
-                    <li><strong>Usuario:</strong> " . $email . "</li>
+                    <li><strong>Usuario:</strong> " . $nombre . "</li>
                 </ul>
                 <p>A partir de ahora, podrás acceder a nuestra plataforma y disfrutar de todo el contenido que tenemos preparado para ti.</p>
                 <br>
-                <a href='http://comiclook.com' style='background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ir a mi cuenta</a>
+                <a href='https://comiclook-tfg.infinityfreeapp.com/' style='background-color: #901735; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Ir a mi cuenta</a>
                 <br><br>
-                <p>Si no te has registrado en nuestro sitio, por favor ignora este correo.</p>
+                <p>Si no te has registrado en nuestro sitio, por favor envianos un correo contandonos tu problema.</p>
                 <hr>
                 <p style='font-size: 0.8em; color: #7f8c8d;'>Atentamente,<br>El equipo de ComicLook</p>
             </div>
@@ -146,14 +146,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $mail->send();
         //Por el momento se enviará a iniciar sesion por temas del rol
         header("location: login.php");
-    } catch(PDOException $e) {
-        if ($_conexion->inTransaction()) {
-            $_conexion->rollBack();
+        } catch(PDOException $e) {
+            if ($_conexion->inTransaction()) {
+                $_conexion->rollBack();
+            }
+            $err_registro = "No se ha podido registrar al usuario";
         }
-        $err_registro = "No se ha podido registrar al usuario";
     }
-   }
-   
 }
 ?>
 <!DOCTYPE html>
