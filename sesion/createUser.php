@@ -181,6 +181,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <hr>
         <label for="contrasena" >Contraseña</label>
         <input type="password" id="password" name="contrasena">
+        <small>Debe contener una mayúscula, una minúscula, un número y un carácter especial</small>
         <?php 
         if(isset($err_contrasena)) echo "<p class='FE'>$err_contrasena</p>" ;
         else echo "<p class='FE'></p>";
