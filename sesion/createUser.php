@@ -186,8 +186,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         else echo "<p class='FE'></p>";
         ?>
         <hr>
-        <input type="reset" value="BotonReseteo" id="BotonReseteo">
-        <input type="submit" value="BotonEnviar" id="BotonEnviar">
+        <input type="reset" value="Borrar" id="BotonReseteo">
+        <input type="submit" value="Enviar" id="BotonEnviar">
     </form>
     <span>¿Tienes una cuenta?</span>
     <a href="login.php">Iniciar sesión</a>
