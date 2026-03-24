@@ -9,7 +9,7 @@
     require "conexion_pdo.php";
     if(isset($_GET["usuarioexistente"])) $err_usuario = "El usuario ya existe";
     if($_SERVER["REQUEST_METHOD"] == "POST"){
-        $tmp_usuario = $_POST["nombre"];
+        $tmp_usuario = $_POST["usuario"];
         $tmp_contrasena = $_POST["contrasena"];
 
         if($tmp_usuario == "") $err_usuario = "Inserta un usuario";
@@ -45,9 +45,9 @@
 <body>
     <form action="" method="POST" id="Formulario">
 
-        <label for="nombre">Nombre</label>
-        <input type="text" id="nombre" name="nombre">
-        <?php if(isset($err_nombre)) echo "<p class='FE'>$err_nombre</p>" ;?>
+        <label for="usuario">Nombre</label>
+        <input type="text" id="usuario" name="nombre">
+        <?php if(isset($err_usuario)) echo "<p class='FE'>$err_usuario</p>" ;?>
         <hr>
 
         <label for="contrasena" >Contraseña</label>
@@ -55,8 +55,8 @@
         <?php if(isset($err_contrasena)) echo "<p class='FE'>$err_contrasena</p>" ;?>
         <hr>
 
-        <input type="button" value="BotonReseteo" id="BotonReseteo">
-        <input type="submit" value="BotonEnviar" id="BotonEnviar">
+        <input type="button" value="Borrar" id="BotonReseteo">
+        <input type="submit" value="Enviar" id="BotonEnviar">
     </form>
     <span>¿No tienes cuenta?</span>
     <a href="createUser.php">Registrarse</a>
