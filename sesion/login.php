@@ -9,7 +9,7 @@
     require "conexion_pdo.php";
     if(isset($_GET["usuarioexistente"])) $err_usuario = "El usuario ya existe";
     if($_SERVER["REQUEST_METHOD"] == "POST"){
-        $tmp_usuario = $_POST["usuario"];
+        $tmp_usuario = $_POST["nombre"];
         $tmp_contrasena = $_POST["contrasena"];
 
         if($tmp_usuario == "") $err_usuario = "Inserta un usuario";
@@ -51,7 +51,7 @@
         <hr>
 
         <label for="contrasena" >Contraseña</label>
-        <input type="text" id="password" name="contrasena">
+        <input type="password" id="password" name="contrasena">
         <?php if(isset($err_contrasena)) echo "<p class='FE'>$err_contrasena</p>" ;?>
         <hr>
 
