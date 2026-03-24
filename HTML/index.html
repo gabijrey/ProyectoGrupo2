@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boceto Comiclook - Inicio Tailwind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+<body class="bg-gray-900 text-black">
+
+    <nav class="bg-yellow-500 border-b-4 border-black p-4 grid grid-cols-3 items-center">
+        <div></div>
+        <div class="flex justify-center">
+            <img src="../Imagenes/logo.webp" class="h-15 w-full">
+        </div>
+        
+        <div class="flex justify-end items-center space-x-4">
+            <input type="text" placeholder="Buscar..." class="border-2 border-black p-1">
+            <form action="iniciarSesion.php">
+                <button class="bg-black text-white p-2 font-bold uppercase hover:bg-gray-800 transition-colors">
+                    Login
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 p-6 border-t-8 border-black">
+        <div class="bg-blue-500 border-4 border-black p-4 flex flex-col items-center">
+            <h2 class="text-xl font-bold text-white mb-4 mt-3 uppercase text-center">Comics de la semana</h2>
+            
+            <div class="w-44 mb-8 mt-6">
+                <div class="bg-yellow-500 border-2 border-black p-1 font-bold text-xs">
+                    1. Comic 1
+                </div>
+                <div class="h-64 w-full bg-white border-2 border-black overflow-hidden">
+                    <img class="w-full h-full object-cover" src="../Imagenes/joker-batman.jpg" alt="Batman">
+                </div>
+            </div>
+
+            <div class="w-44 mb-8">
+                <div class="bg-yellow-500 border-2 border-black p-1 font-bold text-xs">
+                    2. Comic 2
+                </div>
+                <div class="h-64 w-full bg-white border-2 border-black overflow-hidden">
+                    <img class="w-full h-full object-cover" src="../Imagenes/superman.jpg" alt="Superman">
+                </div>
+            </div>
+
+            <div class="w-44">
+                <div class="bg-yellow-500 border-2 border-black p-1 font-bold text-xs">
+                    3. Comic 3
+                </div>
+                <div class="h-64 w-full bg-white border-2 border-black overflow-hidden">
+                    <img class="w-full h-full object-cover" src="../Imagenes/deadpool-wolverine.jpg" >
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-3 bg-yellow-500 border-4 border-black p-2">
+            <div class="bg-gray-300 h-100  border-2 border-black flex items-center justify-center">
+                <img class="h-100 w-full" src="../Imagenes/comic-1.jpg" alt="">
+            </div>
+            <div class="bg-yellow-500 border-t-4 border-black p-4">
+                <h3 class="text-3xl font-bold uppercase">The Amazing Spiderman</h3>
+                <p class="mt-2 font-semibold">Resumen un poco de que trata el comic (sin spoilers)</p>
+                <button class="mt-4 bg-red-600 text-white border-2 border-black p-2 font-bold">LEER AHORA</button>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-gray-800 text-white border-4 border-black p-4">
+                <h2 class="text-xl font-bold text-red-500 border-b-2 border-red-500 mb-2">CHAT</h2>
+                <p class="text-sm"><strong class="text-blue-400">Jose Miguel:</strong> ¡Hola a todos!</p>
+                <p class="text-sm"><strong class="text-green-400">Juan Carlos:</strong> Perro sanchee</p>
+            </div>
+
+            <div class="bg-yellow-500 border-4 border-black p-4">
+                <h2 class="text-xl font-bold text-black uppercase mb-2">¿Quién es mejor?</h2>
+                <button class="w-full bg-black text-white p-1 mb-2">BATMAN</button>
+                <button class="w-full bg-red-600 text-white p-1">SUPERMAN</button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="w-full bg-[#262626] border-t-8 border-black py-8 px-6 mt-12 text-center text-white">
+    <div class="max-w-7xl mx-auto grid grid-cols-3 items-center">
+        
+        <div class="text-left">
+           <div class="h-12 w-full overflow-hidden">
+                    <img src="../Imagenes/logo.webp" class="h-12 w-full" >
+            </div>
+        </div>
+
+        <div class="text-center">
+            <div class="inline-block bg-[#1a1a1a] p-1 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                <p class="text-sm text-gray-400 p-2">
+                    © 2026 TFG DAW - Proyecto Comiclook 
+                </p>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 text-red-600 text-2xl font-bold">
+            <a href="https://www.instagram.com/somoscomiclook" class="hover:scale-110 cursor-pointer ">Insta</a>
+            <a href="https://x.com/somoscomiclook" class="hover:scale-110 cursor-pointer">X</a>
+            <span class="hover:scale-110 cursor-pointer">Tiktok</span>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
