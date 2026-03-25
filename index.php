@@ -34,7 +34,7 @@ function obtenerNovedad($conexion, $tipo) {
                 <a class="border border-rose-800 text-white px-4 py-2 hover:bg-rose-800 transition-colors rounded-lg text-sm" href="sesion/createUser.php">Registrarse</a>
             <?php }else{ ?>
                 <span class="text-sm">Hola, @<?= $_SESSION['usuario'] ?></span>
-                <a class="bg-rose-800 text-white px-4 py-2 hover:bg-rose-900 transition-colors rounded-lg text-sm" href="sesion/user.php">Mi cuenta</a>
+                <a class="bg-rose-800 text-white px-4 py-2 hover:bg-rose-900 transition-colors rounded-lg text-sm" href="user.php?<?= $_SESSION['usuario'] ?>">Mi cuenta</a>
                 <a class="border border-rose-800 text-white px-4 py-2 hover:bg-rose-800 transition-colors rounded-lg text-sm" href="sesion/logout.php">Logout</a>
             <?php } ?>
         </div>
