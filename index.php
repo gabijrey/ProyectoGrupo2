@@ -97,5 +97,3 @@ function obtenerNovedad($conexion, $tipo) {
     </div>
 </body>
 </html>
-
-</script>
