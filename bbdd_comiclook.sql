@@ -1,23 +1,36 @@
--- Borrar BBDD si ya existe (hosting)
--- DROP SCHEMA IF EXISTS if0_41430615_comiclook;
-
-/*-- Borrar base de datos si ya existe (local)
-DROP SCHEMA IF EXISTS comiclook;
-
--- Crear usuario (Local)
+/*
+-- Crear usuario
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost';
 FLUSH PRIVILEGES;
+*/
 
--- CREAR BBDD (local)
-CREATE DATABASE comiclook;
-USE comiclook;*/
+/*
+-----------------------------------------------------------------------------
+Cuando estes trabajando en local, por favor descomenta el codigo debajo de los comentarios que ponen "local" entre parentesis. Cuando termines de hacer alguna modificación vuelve a comentarlo.
+
+
+------------------------------------------------------------------------------
+*/
+
+/*
+-- Borrar BBDD si ya existe (hosting)
+DROP SCHEMA IF EXISTS if0_41430615_comiclook;
 
 -- Crear BBDD (hosting)
-/*
 CREATE SCHEMA if0_41430615_comiclook;
 USE if0_41430615_comiclook;
 */
+
+/*
+-- Borrar base de datos si ya existe (local)
+DROP SCHEMA IF EXISTS comiclook;
+
+-- CREAR BBDD (local)
+CREATE DATABASE comiclook;
+USE comiclook;
+*/
+
 
 /*Borrar las tablas una a una*/
 SET FOREIGN_KEY_CHECKS = 0;
@@ -53,10 +66,11 @@ num_obras INT
 CREATE TABLE usuario (
 nombre VARCHAR(255) PRIMARY KEY,
 email VARCHAR(255) UNIQUE,
-FOREIGN KEY (email) REFERENCES autor(email),
+-- FOREIGN KEY (email) REFERENCES autor(email),
 contrasena VARCHAR(150),
 fecha_registro DATE,
 rol INT,
+bio TEXT,
 img_perfil VARCHAR(255)
 );
 
@@ -69,6 +83,7 @@ genero VARCHAR(80),
 anno_lanzamiento INT,
 portada VARCHAR(255),
 id_autor INT,
+tipo INT,
 nombre_editorial VARCHAR(100),
 FOREIGN KEY (nombre_editorial) REFERENCES editorial(nombre)
 );
@@ -88,17 +103,17 @@ CREATE TABLE resena (
 id INT PRIMARY KEY auto_increment,
 fecha_public DATE,
 puntuacion INT,
-id_usuario INT,
+nombre_usuario VARCHAR(255),
 id_obra INT,
-FOREIGN KEY (id_usuario) REFERENCES usuario(id),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
 FOREIGN KEY (id_obra) REFERENCES obra(id)
 );
 
 -- Tabla de suscripciones
 CREATE TABLE suscripcion(
 id INT PRIMARY KEY auto_increment,
-id_usuario INT,
-FOREIGN KEY (id_usuario) REFERENCES usuario(id),
+nombre_usuario VARCHAR(255),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
 metodo_pago VARCHAR(50),
 estado BOOLEAN,
 fecha_inicio DATE,
