@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = "Usuario no encontrado.";
     } else {
         $bio = trim($_POST['bio'] ?? '');
+        if (strlen($bio) > 1000) {
+            $errores[] = "Has superado el maximo de caracteres de la biografia!";
+        }
         $pass        = $_POST['pass'] ?? '';
         $passConfirm = $_POST['pass_confirm'] ?? '';
         $nuevaHash   = null;
@@ -41,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!is_dir($dirFotos)) {
                     mkdir($dirFotos, 0755, true);
                 }
-                $nombreFoto = 'perfil_' . $userActual['id'] . '_' . time() . '.' . $ext;
+                $nombreFoto = 'perfil_' . $userActual['nombre'] . '_' . time() . '.' . $ext;
                 $rutaDestino = $dirFotos . $nombreFoto;
                 if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaDestino)) {
                     if (!empty($userActual['img_perfil']) && file_exists($userActual['img_perfil'])) {
@@ -55,11 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (empty($errores)) {
             if ($nuevaHash) {
-                $sql = "UPDATE usuario SET biografia = ?, contrasena = ?, img_perfil = ? WHERE id = ?";
-                $params = [$bio, $nuevaHash, $rutaFoto, $userActual['id']];
+                $sql = "UPDATE usuario SET bio = ?, contrasena = ?, img_perfil = ? WHERE nombre = ?";
+                $params = [$bio, $nuevaHash, $rutaFoto, $userActual['nombre']];
             } else {
-                $sql = "UPDATE usuario SET biografia = ?, img_perfil = ? WHERE id = ?";
-                $params = [$bio, $rutaFoto, $userActual['id']];
+                $sql = "UPDATE usuario SET bio = ?, img_perfil = ? WHERE nombre = ?";
+                $params = [$bio, $rutaFoto, $userActual['nombre']];
             }
             $stmtUpdate = $_conexion->prepare($sql);
             if ($stmtUpdate->execute($params)) {
@@ -87,6 +90,7 @@ if (!$user) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control | ComicLook</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="Js/FuncionesPerfil.js" defer></script>
 </head>
 <body class="bg-zinc-950 text-white font-sans">
 
@@ -121,41 +125,44 @@ if (!$user) {
 
         <main class="flex-1 p-8">
             <h1 class="text-3xl font-bold mb-8">Ajustes de Cuenta</h1>
-
             <!-- ─── MENSAJES DE FEEDBACK ─── -->
-            <?php if ($exito){ ?>
+            <?php if ($exito): ?>
                 <div class="mb-6 flex items-center gap-3 bg-green-900/40 border border-green-700 text-green-400 px-5 py-4 rounded-xl">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     <?= htmlspecialchars($exito) ?>
                 </div>
-            <?php }; ?>
+            <?php endif; ?>
 
-            <?php if (!empty($errores)){ ?>
+            <?php if (!empty($errores)): ?>
                 <div class="mb-6 bg-rose-900/40 border border-rose-700 text-rose-400 px-5 py-4 rounded-xl space-y-1">
-                    <?php foreach ($errores as $err){ ?>
+                    <?php foreach ($errores as $err): ?>
                         <p class="flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             <?= htmlspecialchars($err) ?>
                         </p>
-                    <?php }; ?>
+                    <?php endforeach; ?>
                 </div>
-            <?php }; ?>
+            <?php endif; ?>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-2 space-y-6">
                     <form action="user.php" method="POST" enctype="multipart/form-data" class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6">
                         <div class="flex items-center gap-6 pb-6 border-b border-zinc-800">
-                            <div class="w-24 h-24 bg-zinc-800 rounded-full overflow-hidden border-2 border-rose-800">
+                            <div class="w-24 h-24 bg-zinc-800 rounded-full overflow-hidden border-2 border-rose-800 cursor-pointer hover:opacity-80 transition-opacity">
                                 <img id="img-perfil" src="<?= htmlspecialchars($user['img_perfil'] ?: 'imagen/perfiles/perfil__1774513912.png') ?>" class="w-full h-full object-cover" alt="Foto de perfil">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-2">Cambiar foto de perfil</label>
-                                <input type="file" name="foto" accept="image/*" onchange="previewImage(event)" class="text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-rose-800 file:text-white hover:file:bg-rose-700">
+                                <label class="block text-sm font-medium mb-2 uppercase tracking-wide opacity-70">Cambiar foto de perfil</label>
+                                <input id="foto-input" type="file" name="foto" accept="image/*" class="hidden">
+                                <button type="button" class="text-xs bg-rose-800/20 text-rose-400 border border-rose-800/30 px-4 py-2 rounded-full hover:bg-rose-800/30 transition-all font-bold">
+                                    Seleccionar archivo
+                                </button>
                                 <p class="text-xs text-zinc-600 mt-1">JPG, PNG, WEBP · Máx. 2MB</p>
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">Biografía</label>
-                            <textarea name="bio" rows="4" maxlength="500" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 focus:border-rose-500 outline-none transition-colors resize-none"><?= htmlspecialchars($user['biografia'] ?? '') ?></textarea>
+                            <textarea name="bio" id="bio-textarea" rows="4" maxlength="1200" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 focus:border-rose-500 outline-none transition-colors resize-none"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -205,17 +212,3 @@ if (!$user) {
     </div>
 </body>
 </html>
-
-<script>
-/*function previewImage(event) {
-    const reader = new FileReader(); // Creamos un lector de archivos
-    const imageField = document.getElementById("img-perfil"); // Buscamos nuestra foto
-
-    reader.onload = () => {
-        if (reader.readyState === 2) {
-            imageField.src = reader.result; // Cambiamos la src de la foto por la nueva
-        }
-    }
-    reader.readAsDataURL(event.target.files[0]); // Leemos el archivo seleccionado
-}*/
-</script>
