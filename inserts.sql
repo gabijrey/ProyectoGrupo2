@@ -1,8 +1,27 @@
+
+
 -- 1. INSERTAR LAS EDITORIALES (Fundamental para que las obras no den error de FK)
 INSERT INTO editorial (nombre, anno_fundacion, ubicacion) VALUES 
 ('Norma Editorial', 1977, 'Barcelona, España'),
 ('B de Bolsillo', 1986, 'Barcelona, España'),
 ('Debolsillo', 1957, 'Barcelona, España');
+
+
+-- 2. INSERTAR LOS NOMBRES DE CATEGORIA
+INSERT INTO categoria (nombre) VALUES 
+('Acción'),
+('Aventura'),
+('Ciencia Ficción'),
+('Romance'),
+('Thriller'),
+('Juvenil'),
+('Infantil'),
+('Superhéroes'),
+('Fantasía'),
+('Miedo'),
+('Humor'),
+('Novela Gráfica'),
+('Drama');
 
 
 -- 2. CORRECCIÓN DE AUTORES (Asegúrate de ejecutar este primero para tener los IDs 1 al 5)
