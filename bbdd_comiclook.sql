@@ -36,6 +36,8 @@ USE comiclook;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS obra_autor;
+DROP TABLE IF EXISTS obra_categoria;
+DROP TABLE IF EXISTS categoria;
 DROP TABLE IF EXISTS resena;
 DROP TABLE IF EXISTS suscripcion;
 DROP TABLE IF EXISTS obra;
@@ -88,6 +90,12 @@ nombre_editorial VARCHAR(100),
 FOREIGN KEY (nombre_editorial) REFERENCES editorial(nombre)
 );
 
+-- Tabla categoria
+CREATE TABLE categoria (
+id INT PRIMARY KEY auto_increment,
+nombre VARCHAR(50) UNIQUE
+);
+
 -- Tabla intermedia entre obra y autor
 CREATE TABLE obra_autor (
 id_obra INT,
@@ -96,6 +104,15 @@ id_autor INT,
 PRIMARY KEY (id_obra, id_autor),
 FOREIGN KEY (id_obra) REFERENCES obra(id),
 FOREIGN KEY (id_autor) REFERENCES autor(id)
+);
+
+-- Tabla intermedia entre obra y categoria
+CREATE TABLE obra_categoria (
+id_obra INT,
+id_categoria INT,
+PRIMARY KEY (id_obra, id_categoria),
+FOREIGN KEY (id_obra) REFERENCES obra(id),
+FOREIGN KEY (id_categoria) REFERENCES categoria(id)
 );
 
 -- Tabla de reseñas
