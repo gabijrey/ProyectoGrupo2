@@ -15,6 +15,7 @@ function obtenerNovedad($conexion, $tipo) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comiclook | Inicio</title>
+    <link rel="icon" href="comiclook_icon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-zinc-900 text-white flex flex-col min-h-screen">
@@ -29,12 +30,12 @@ function obtenerNovedad($conexion, $tipo) {
             <a href="catalogo.php?tipo=2" class="hover:text-rose-500 transition-colors">Libros</a>
         </div>
         <div class="flex justify-end items-center gap-3">
-            <?php if(!isset($_SESSION['usuario'])){ ?>
+            <?php if(!isset($_SESSION['nombre'])){ ?>
                 <a class="bg-rose-800 text-white px-4 py-2 hover:bg-rose-900 transition-colors rounded-lg text-sm" href="sesion/login.php">Iniciar sesión</a>
                 <a class="border border-rose-800 text-white px-4 py-2 hover:bg-rose-800 transition-colors rounded-lg text-sm" href="sesion/createUser.php">Registrarse</a>
             <?php }else{ ?>
-                <span class="text-sm">Hola, @<?= $_SESSION['usuario'] ?></span>
-                <a class="bg-rose-800 text-white px-4 py-2 hover:bg-rose-900 transition-colors rounded-lg text-sm" href="user.php?usuario=<?= $_SESSION['usuario'] ?>">Mi cuenta</a>
+                <span class="text-sm">Hola, @<?= $_SESSION['nombre'] ?></span>
+                <a class="bg-rose-800 text-white px-4 py-2 hover:bg-rose-900 transition-colors rounded-lg text-sm" href="user.php?usuario=<?= $_SESSION['nombre'] ?>">Mi cuenta</a>
                 <a class="border border-rose-800 text-white px-4 py-2 hover:bg-rose-800 transition-colors rounded-lg text-sm" href="sesion/logout.php">Logout</a>
             <?php } ?>
         </div>
