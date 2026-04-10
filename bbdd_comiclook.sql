@@ -106,6 +106,7 @@ id INT PRIMARY KEY auto_increment,
 fecha_public DATE,
 puntuacion INT,
 nombre_usuario VARCHAR(255),
+comentario TEXT,
 id_obra INT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
 FOREIGN KEY (id_obra) REFERENCES obra(id)
