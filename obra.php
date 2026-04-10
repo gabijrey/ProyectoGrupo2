@@ -30,28 +30,24 @@ if (!$obra) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resena_texto'])) {
     $comentario = trim($_POST['resena_texto']);
     $puntuacion = (int)($_POST['puntuacion'] ?? 5);
-    if (isset($_SESSION['nombre'])) {
+    if (isset($_SESSION['nombre']) && $comentario !== "") {
         try {
-            //Buscamos el ID del usuario actual
-            $user_stmt = $_conexion->prepare("SELECT id FROM usuario WHERE nombre = :nom LIMIT 1");
-            $user_stmt->execute(['nom' => $_SESSION['nombre']]);
-            $user_data = $user_stmt->fetch();
-            $id_usuario = $user_data['id'] ?? null;
-            if ($comentario !== '' && $id_usuario) {
+            //Hacemos la insercion de los datos correspondientes a reseña
                 $ins = $_conexion->prepare(
-                    "INSERT INTO resena (id_obra, id_usuario, comentario, puntuacion, fecha_public)
-                    VALUES (:id_obra, :id_usuario, :comentario, :puntuacion, NOW())"
+                    "INSERT INTO resena (fecha_public, puntuacion, nombre_usuario, comentario, id_obra)
+                    VALUES (NOW(), :puntuacion, :nombre_usuario, :comentario, :id_obra)"
                 );
                 $ins->execute([
-                    'id_obra'    => $id_obra,
-                    'id_usuario' => $id_usuario,
-                    'comentario' => $comentario,
                     'puntuacion' => $puntuacion,
+                    'nombre_usuario' => $_SESSION["nombre"],
+                    'comentario' => $comentario,
+                    'id_obra'    => $id_obra
                 ]);
                 header("Location: obra.php?id=$id_obra&resena=subida");
                 exit();
-            }
-        } catch (PDOException $e) {}
+        } catch (PDOException $e) {
+            die("Error en la inserción ". $e->getMessage());
+        }
     }
 }
 
@@ -74,9 +70,8 @@ try {
 $resenas = [];
 try {
     $stmt2 = $_conexion->prepare("
-        SELECT r.id, r.fecha_public, r.puntuacion, r.comentario, r.id_usuario, u.nombre AS usuario
+        SELECT r.fecha_public, r.puntuacion, r.comentario, r.nombre_usuario AS usuario
         FROM resena r
-        LEFT JOIN usuario u ON r.id_usuario = u.id
         WHERE r.id_obra = :id
         ORDER BY r.fecha_public DESC
         LIMIT 3
@@ -101,6 +96,7 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comiclook | <?= $titulo ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="comiclook_icon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <style>
@@ -164,7 +160,7 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
         <div class="flex-shrink-0 fade-up z-20">
             <div class="bg-white p-3 border-4 border-black shadow-[12px_12px_0_0_black]">
                 <?php if ($portada){ ?>
-                    <img src="imagen/<?= $portada ?>" alt="<?= $titulo ?>"
+                    <img src="<?= $portada ?>" alt="<?= $titulo ?>"
                         class="w-48 md:w-64 h-auto border-4 border-black object-cover">
                 <?php }else{?>
                     <div class="w-48 md:w-64 h-80 border-4 border-black bg-zinc-200 flex items-center justify-center text-black font-comic text-2xl uppercase text-center p-4">
@@ -283,8 +279,8 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
                 </div>
             <?php }else{ ?>
                 <div class="flex flex-col gap-5">
-                <?php foreach ($resenas as $reseña) { 
-                    $estrellas = (int)($reseña['puntuacion'] ?? 0); ?>
+                <?php foreach ($resenas as $resena) { 
+                    $estrellas = (int)($resena['puntuacion'] ?? 0); ?>
                     <article class="resena-card bg-neutral-900 border-4 border-black shadow-[6px_6px_0_0_black] p-5 transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
                         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                             <div class="flex items-center gap-2">
@@ -292,7 +288,7 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
                                     <?php
                                     try {
                                         $stmt = $_conexion->prepare("SELECT img_perfil FROM usuario WHERE nombre = :nombre");
-                                        $stmt->execute(['nombre' => $reseña['usuario']]);
+                                        $stmt->execute(['nombre' => $resena['usuario']]);
                                         $img_perfil = $stmt->fetch(PDO::FETCH_ASSOC);
                                     } catch (PDOException $e) {
                                         die();
@@ -300,16 +296,16 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
                                     ?>
                                     <img src="<?= $img_perfil['img_perfil'] ?? 'default-avatar.png' ?>" alt="Perfil" class="object-cover">
                                 </div>
-                                <span class="font-comic text-base uppercase tracking-widest text-white">@<?= htmlspecialchars($reseña['usuario'] ?? 'user' . $reseña['id_usuario']) ?></span>
+                                <span class="font-comic text-base uppercase tracking-widest text-white">@<?= htmlspecialchars($resena['usuario'] ?? 'user' . $resena['id_usuario']) ?></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="bg-black border-2 border-zinc-700 px-2 py-0.5 flex items-center gap-0.5">
                                     <span class="text-rose-500 text-sm"><?= str_repeat('★', $estrellas) ?></span><span class="text-zinc-700 text-sm"><?= str_repeat('★', 5 - $estrellas) ?></span>
                                 </div>
-                                <span class="font-comic text-xs text-zinc-500 uppercase tracking-wider"><?= date('d/m/Y', strtotime($reseña['fecha_public'])) ?></span>
+                                <span class="font-comic text-xs text-zinc-500 uppercase tracking-wider"><?= date('d/m/Y', strtotime($resena['fecha_public'])) ?></span>
                             </div>
                         </div>
-                        <p class="text-zinc-300 text-sm leading-relaxed border-l-4 border-rose-800 pl-4"><?= nl2br(htmlspecialchars($reseña['comentario'])) ?></p>
+                        <p class="text-zinc-300 text-sm leading-relaxed border-l-4 border-rose-800 pl-4"><?= nl2br(htmlspecialchars($resena['comentario'])) ?></p>
                     </article>
                 <?php } ?>
                 </div>
