@@ -96,6 +96,7 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comiclook | <?= $titulo ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../Js/FormularioRegistro.js"></script>
     <link rel="icon" href="comiclook_icon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
