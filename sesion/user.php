@@ -189,7 +189,6 @@ if (!$user) {
                         <?php }else{
                             foreach ($resenas as $resena){ ?>
                                 <div class="flex gap-4 p-3 bg-zinc-950 rounded-xl border border-zinc-800">
-                                    <img src="img/portadas/<?= htmlspecialchars($resena['portada']) ?>" class="w-12 h-16 object-cover rounded" alt="<?= htmlspecialchars($resena['titulo']) ?>">
                                     <div class="min-w-0">
                                         <h4 class="text-sm font-bold truncate"><?= htmlspecialchars($resena['titulo']) ?></h4>
                                         <div class="text-rose-500 text-xs">★ <?= htmlspecialchars($resena['puntuacion']) ?>/5</div>
