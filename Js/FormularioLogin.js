@@ -1,16 +1,32 @@
-window.onload = function(){
+window.onload = function () {
   let BotonEnviar = document.getElementById("BotonEnviar");
   let BotonReseteo = document.getElementById("BotonReseteo");
   let Formu = document.getElementById("Formulario");
   let errores;
   let contenedor;
 
-    BotonReseteo.onclick = function () {
-    for (let i = 0; i < 2; i++) { 
-      Formu.elements[i].value = "";
-      Formu.elements[i].style.border = "";
+  let usuario = document.getElementById("usuario");
+  let contrasena = document.getElementById("contrasena");
+
+  BotonReseteo.onclick = function () {
+    for (let i = 0; i < Formu.elements.length; i++) {
+      //Meter en un if para que no pille los input que son botones
+      if (
+        Formu.elements[i].type === "text" ||
+        Formu.elements[i].type === "password"
+      ) {
+        Formu.elements[i].value = "";
+        Formu.elements[i].style.border = "";
+      }
     }
-    if(contenedor){
+
+    //Para que se limpien los mensajes de error cuando el usuario pulse reset
+    let errorMsg = document.getElementsByClassName("FE");
+    for (let error of errorMsg) {
+      error.textContent = "";
+    }
+
+    if (contenedor) {
       document.body.removeChild(contenedor);
       contenedor = null;
     }
@@ -19,47 +35,72 @@ window.onload = function(){
   // Voy a meter aqui directamente todas las expresiones:
   // -------------------------------------------------------- //
 
-
-    //Expresión anti Scripts//
-
+  /** VERSION 2 */
+  function validarDatos() {
+    //Expresion anti-scripts
     const antiScripts = /<script\b[^>]*>|on\w+\s*=/gi;
 
-    BotonEnviar.onclick = function(e){
-        errores = false;
-        e.preventDefault();
-        
-        // aqui borro el contenedor del fallo //
+    errores = false;
 
-        if (contenedor) {
-            document.body.removeChild(contenedor);
-            contenedor = null;
-        }
-        
-        // Filtros principales //
+    // aqui borro el contenedor del fallo //
 
-    Formu.elements[0].value = Formu.elements[0].value.trim(); // quitar espacios al nombre
-    Formu.elements[1].value = Formu.elements[1].value.trim(); // quitar espacios a la contraseña
-
-        if (antiScripts.test(Formu.elements[0].value)) {
-            errores = true;
-        }
-        if (antiScripts.test(Formu.elements[1].value)){
-            errores = true;
-        }
-        if (Formu.elements[0].value == "" || Formu.elements[1].value == ""){
-            errores = true;
-        }
-
-        if (errores) {
-        contenedor = document.createElement("div");
-        contenedor.textContent = "Usuario o contraseña no válidos";
-        contenedor.style.color = "red";
-        contenedor.style.borderRadius = "20px";
-        contenedor.style.border = "solid red 5px";
-        document.body.appendChild(contenedor);
-        }else{
-            Formu.submit();
-        }
-
+    if (contenedor) {
+      document.body.removeChild(contenedor);
+      contenedor = null;
     }
-}
+
+    // Filtros principales //
+    usuario.value = usuario.value.trim(); // quitar espacios al usuario
+    contrasena.value = contrasena.value.trim(); // quitar espacios a la contraseña
+
+    if (antiScripts.test(usuario.value)) {
+      errores = true;
+    }
+    if (antiScripts.test(contrasena.value)) {
+      errores = true;
+    }
+    if (usuario.value == "" || contrasena.value == "") {
+      errores = true;
+    }
+
+    //Comprueba que no hay errores y valida todo
+    if (!errores) {
+        
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  //Enviar el formulario pulsando enter
+  Formu.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (validarDatos()) {
+        Formu.submit();
+      } else {
+      contenedor = document.createElement("div");
+      contenedor.textContent = "Usuario o contraseña no válidos";
+      contenedor.style.color = "red";
+      contenedor.style.borderRadius = "2px";
+      contenedor.style.border = "solid red 1px";
+      document.body.appendChild(contenedor);
+      }
+    }
+  });
+
+  //Enviar el formulario haciendo click
+  BotonEnviar.addEventListener("click", function (e) {
+    e.preventDefault();
+    if (validarDatos()) {
+      Formu.submit();
+    } else {
+      contenedor = document.createElement("div");
+      contenedor.textContent = "Usuario o contraseña no válidos";
+      contenedor.style.color = "red";
+      contenedor.style.borderRadius = "2px";
+      contenedor.style.border = "solid red 1px";
+      document.body.appendChild(contenedor);
+    }
+  });
+};
