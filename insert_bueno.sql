@@ -54,7 +54,10 @@ INSERT INTO obra (titulo, descripcion, genero, anno_lanzamiento, portada, tipo, 
 ('Ángeles y Demonios', 'Una antigua hermandad secreta planea destruir el Vaticano.', 'Thriller', 2000, 'imagen/img_obras/libros/angeles_demonios.jpg', 2, 'Planeta'),
 ('Los Pilares de la Tierra', 'La construcción de una catedral gótica en la Inglaterra del siglo XII.', 'Ficción Histórica', 1989, 'imagen/img_obras/libros/pilares_tierra.jpg', 2, 'Plaza & Janés'),
 ('El Médico', 'Un joven viaja a Persia en el siglo XI para aprender el arte de la medicina.', 'Ficción Histórica', 1986, 'imagen/img_obras/libros/medico.jpg', 2, 'Rocabolsillo'),
-('Ojos de agua', 'Leo Caldas es asignado a la investigación del asesinato de un joven saxofonista en la costa gallega', 'Misterio', 2007, 'imagen/img_obras/libros/ojosdeagua_1.jpg', 2, 'Debolsillo');
+('Ojos de agua', 'Leo Caldas es asignado a la investigación del asesinato de un joven saxofonista en la costa gallega', 'Misterio', 2007, 'imagen/img_obras/libros/ojosdeagua_1.jpg', 2, 'Debolsillo'),
+('Project Hail Mary', 'Un hombre despierta en una nave espacial sin recordar quién es.', 'Ciencia Ficción', 2021, 'imagen/img_obras/libros/hail_mary.jpg', 2, 'Nova'),
+('El Imperio Final', 'Un mundo donde el héroe profetizado falló y el mal gobierna.', 'Fantasía', 2006, 'imagen/img_obras/libros/mistborn.jpg', 2, 'B de Bolsillo'),
+('El Camino de los Reyes', 'El inicio de la épica saga del Archivo de las Tormentas.', 'Fantasía', 2010, 'imagen/img_obras/libros/way_of_kings.jpg', 2, 'B de Bolsillo');
 
 -- ==============================================================================
 -- 3. CATEGORÍA: MANGAS (TIPO 1) - 33 Obras
@@ -92,7 +95,11 @@ INSERT INTO obra (titulo, descripcion, genero, anno_lanzamiento, portada, tipo, 
 ('Berserk Vol. 2', 'Guts continúa su cacería de los apóstoles enfrentándose al Conde.', 'Seinen', 1990, 'imagen/img_obras/mangas/berserk_2.jpg', 1, 'Kitsune Manga'),
 ('Gantz Vol. 1', 'Personas fallecidas son resucitadas para participar en sádicos juegos de caza extraterrestre.', 'Seinen', 2000, 'imagen/img_obras/mangas/gantz_1.jpg', 1, 'Panini España'),
 ('Pluto Vol. 1', 'Un detective investiga los asesinatos de los robots más avanzados del mundo.', 'Seinen', 2003, 'imagen/img_obras/mangas/pluto_1.jpg', 1, 'Planeta Cómic'),
-('Buenas noches, Punpun Vol. 2', 'Las complejas relaciones familiares de Punpun comienzan a fracturarse.', 'Seinen', 2008, 'imagen/img_obras/mangas/punpun_2.jpg', 1, 'Norma Editorial');
+('Buenas noches, Punpun Vol. 2', 'Las complejas relaciones familiares de Punpun comienzan a fracturarse.', 'Seinen', 2008, 'imagen/img_obras/mangas/punpun_2.jpg', 1, 'Norma Editorial'),
+('Jujutsu Kaisen Vol. 1', 'Un joven se traga un dedo maldito y entra en el mundo de los hechiceros.', 'Shonen', 2018, 'imagen/img_obras/mangas/jjk_1.jpg', 1, 'Norma Editorial'),
+('Jujutsu Kaisen 0', 'La precuela que explica el origen de las maldiciones más fuertes.', 'Shonen', 2017, 'imagen/img_obras/mangas/jjk_0.jpg', 1, 'Norma Editorial'),
+('Jujutsu Kaisen Vol. 26', 'La batalla culminante en Shinjuku llega a su punto crítico.', 'Shonen', 2024, 'imagen/img_obras/mangas/jjk_26.jpg', 1, 'Norma Editorial'),
+('All You Need is Kill', 'Un soldado atrapado en un bucle temporal luchando contra aliens.', 'Seinen', 2014, 'imagen/img_obras/mangas/all_kill.jpg', 1, 'Norma Editorial');
 
 -- ==============================================================================
 -- 4. CATEGORÍA: CÓMICS (TIPO 3) - 33 Obras
@@ -130,7 +137,10 @@ INSERT INTO obra (titulo, descripcion, genero, anno_lanzamiento, portada, tipo, 
 ('Batman: Asilo Arkham', 'Los reclusos de Arkham toman el control y exigen que Batman se una a ellos.', 'Superhéroes', 1989, 'imagen/img_obras/comics/arkham_asylum.jpg', 0, 'ECC Ediciones'),
 ('Superman: Identidad Secreta', 'Un chico llamado Clark Kent descubre que tiene los poderes del personaje de cómic.', 'Superhéroes', 2004, 'imagen/img_obras/comics/secret_identity.jpg', 0, 'ECC Ediciones'),
 ('Gideon Falls Vol. 1', 'Un misterio que entrelaza a un sacerdote católico y a un joven obsesionado con la basura.', 'Terror', 2018, 'imagen/img_obras/comics/gideon_falls_1.jpg', 0, 'Astiberri'),
-('Monstress Vol. 1', 'Una joven vinculada a un monstruo arcano sobrevive en un mundo matriarcal en guerra.', 'Fantasía', 2015, 'imagen/img_obras/comics/monstress_1.jpg', 0, 'Norma Editorial');
+('Monstress Vol. 1', 'Una joven vinculada a un monstruo arcano sobrevive en un mundo matriarcal en guerra.', 'Fantasía', 2015, 'imagen/img_obras/comics/monstress_1.jpg', 0, 'Norma Editorial'),
+('Soy un ángel perdido', 'Una historia tierna sobre los lazos familiares y el destino.', 'Drama', 2026, 'imagen/img_obras/comics/angel_perdido.jpg', 0, 'Norma Editorial'),
+('Carta Blanca', 'Un romance contado de forma inversa, desde el final hasta el principio.', 'Romance', 2021, 'imagen/img_obras/comics/carta_blanca.jpg', 0, 'Norma Editorial'),
+('Justice League: Origin', 'El renacimiento de la Liga de la Justicia contra Darkseid.', 'Superhéroes', 2011, 'imagen/img_obras/comics/jl_origin.jpg', 0, 'Norma Editorial');
 
 -- ==============================================================================
 -- INSERT DE NUEVOS AUTORES (Sin ID, usando autoincrement)
