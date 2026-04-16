@@ -91,7 +91,7 @@ window.onload = function () {
       // Estructura HTML para que parezca una tarjeta de la web real
       contenedor.innerHTML = `
         <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-700 pb-2">
-            <span class="font-comic text-2xl text-rose-600 uppercase tracking-widest drop-shadow-[2px_2px_0_black]">¡PIFIASTE!</span>
+            <span class="font-comic text-2xl text-rose-600 uppercase tracking-widest drop-shadow-[2px_2px_0_black]">Cuidado Spoileador!!</span>
             <button onclick="this.closest('div').parentElement.remove()" class="text-zinc-400 hover:text-white font-black text-xl leading-none transition-colors">X</button>
         </div>
         <div class="text-white text-sm font-bold uppercase tracking-wider whitespace-pre-line leading-relaxed border-l-4 border-rose-800 pl-3">
