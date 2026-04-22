@@ -22,14 +22,14 @@ CREATE SCHEMA if0_41430615_comiclook;
 USE if0_41430615_comiclook;
 */
 
-/*
+
 -- Borrar base de datos si ya existe (local)
 DROP SCHEMA IF EXISTS comiclook;
 
 -- CREAR BBDD (local)
 CREATE DATABASE comiclook;
 USE comiclook;
-*/
+
 
 
 /*Borrar las tablas una a una*/
@@ -107,6 +107,7 @@ fecha_public DATE,
 puntuacion INT,
 nombre_usuario VARCHAR(255),
 comentario TEXT,
+editada TINYINT DEFAULT 0,
 id_obra INT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
 FOREIGN KEY (id_obra) REFERENCES obra(id)
