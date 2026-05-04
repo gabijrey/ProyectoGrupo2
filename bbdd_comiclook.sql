@@ -38,6 +38,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS obra_autor;
 DROP TABLE IF EXISTS resena;
 DROP TABLE IF EXISTS suscripcion;
+DROP TABLE IF EXISTS favorito;
 DROP TABLE IF EXISTS obra;
 DROP TABLE IF EXISTS usuario;
 DROP TABLE IF EXISTS autor;
@@ -110,6 +111,15 @@ comentario TEXT,
 id_obra INT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
 FOREIGN KEY (id_obra) REFERENCES obra(id)
+);
+
+--Tabla de obras favoritas
+CREATE TABLE favorito (
+id_obra INT,
+nombre_usuario VARCHAR(255),
+PRIMARY KEY (id_obra, nombre_usuario),
+FOREIGN KEY (id_obra) REFERENCES obra(id),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre)
 );
 
 -- Tabla de suscripciones
