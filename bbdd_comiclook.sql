@@ -1,3 +1,5 @@
+
+
 /*
 -- Crear usuario
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
@@ -37,7 +39,9 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS obra_autor;
 DROP TABLE IF EXISTS resena;
+DROP TABLE IF EXISTS lista_obra;
 DROP TABLE IF EXISTS suscripcion;
+DROP TABLE IF EXISTS lista;
 DROP TABLE IF EXISTS favorito;
 DROP TABLE IF EXISTS obra;
 DROP TABLE IF EXISTS usuario;
@@ -122,6 +126,26 @@ FOREIGN KEY (id_obra) REFERENCES obra(id),
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre)
 );
 
+--Tabla de listas personalizadas
+CREATE TABLE lista (
+id INT PRIMARY KEY auto_increment,
+titulo VARCHAR(255),
+descripcion TEXT,
+privacidad TINYINT DEFAULT 0, --lista publica = 0, lista privada = 1
+nombre_usuario VARCHAR(255),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
+fecha_creacion DATE
+);
+
+-- Tabla intermedia para lista y obra
+CREATE TABLE lista_obra (
+id_lista INT,
+id_obra INT,
+PRIMARY KEY (id_lista, id_obra),
+FOREIGN KEY (id_lista) REFERENCES lista(id),
+FOREIGN KEY (id_obra) REFERENCES obra(id)
+);
+
 -- Tabla de suscripciones
 CREATE TABLE suscripcion(
 id INT PRIMARY KEY auto_increment,
@@ -141,3 +165,4 @@ nombre_usuario VARCHAR(255),
 contenido TEXT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre)
 );
+
