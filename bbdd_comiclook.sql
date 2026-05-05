@@ -1,3 +1,5 @@
+
+
 /*
 -- Crear usuario
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
@@ -22,14 +24,14 @@ CREATE SCHEMA if0_41430615_comiclook;
 USE if0_41430615_comiclook;
 */
 
-
+/*
 -- Borrar base de datos si ya existe (local)
 DROP SCHEMA IF EXISTS comiclook;
 
 -- CREAR BBDD (local)
 CREATE DATABASE comiclook;
 USE comiclook;
-
+*/
 
 
 /*Borrar las tablas una a una*/
@@ -37,7 +39,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS obra_autor;
 DROP TABLE IF EXISTS resena;
+DROP TABLE IF EXISTS lista_obra;
 DROP TABLE IF EXISTS suscripcion;
+DROP TABLE IF EXISTS lista;
+DROP TABLE IF EXISTS favorito;
 DROP TABLE IF EXISTS obra;
 DROP TABLE IF EXISTS usuario;
 DROP TABLE IF EXISTS autor;
@@ -107,9 +112,37 @@ fecha_public DATE,
 puntuacion INT,
 nombre_usuario VARCHAR(255),
 comentario TEXT,
-editada TINYINT DEFAULT 0,
 id_obra INT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
+FOREIGN KEY (id_obra) REFERENCES obra(id)
+);
+
+--Tabla de obras favoritas
+CREATE TABLE favorito (
+id_obra INT,
+nombre_usuario VARCHAR(255),
+PRIMARY KEY (id_obra, nombre_usuario),
+FOREIGN KEY (id_obra) REFERENCES obra(id),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre)
+);
+
+--Tabla de listas personalizadas
+CREATE TABLE lista (
+id INT PRIMARY KEY auto_increment,
+titulo VARCHAR(255),
+descripcion TEXT,
+privacidad TINYINT DEFAULT 0, --lista publica = 0, lista privada = 1
+nombre_usuario VARCHAR(255),
+FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre),
+fecha_creacion DATE
+);
+
+-- Tabla intermedia para lista y obra
+CREATE TABLE lista_obra (
+id_lista INT,
+id_obra INT,
+PRIMARY KEY (id_lista, id_obra),
+FOREIGN KEY (id_lista) REFERENCES lista(id),
 FOREIGN KEY (id_obra) REFERENCES obra(id)
 );
 
@@ -132,3 +165,4 @@ nombre_usuario VARCHAR(255),
 contenido TEXT,
 FOREIGN KEY (nombre_usuario) REFERENCES usuario(nombre)
 );
+
