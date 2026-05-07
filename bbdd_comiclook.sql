@@ -92,7 +92,8 @@ portada VARCHAR(255),
 id_autor INT,
 tipo INT,
 nombre_editorial VARCHAR(100),
-FOREIGN KEY (nombre_editorial) REFERENCES editorial(nombre)
+FOREIGN KEY (nombre_editorial) REFERENCES editorial(nombre),
+codigodebarras BIGINT
 );
 
 -- Tabla intermedia entre obra y autor
