@@ -16,6 +16,38 @@
     </div>
     <!-- Enlaces principales -->
     <nav class="flex flex-col gap-8">
+        <?php
+            $pagina_actual_sb = basename($_SERVER['PHP_SELF']);
+            $path_sb = ($pagina_actual_sb == 'index.php') ? "" : "../";
+
+            // Comprobar si el usuario es premium para mostrar enlaces exclusivos
+            $es_premium_sb = false;
+            if (isset($_SESSION['nombre']) && isset($_conexion)) {
+                $helper_path = __DIR__ . '/../sesion/premium_helper.php';
+                if (file_exists($helper_path)) {
+                    require_once $helper_path;
+                    $es_premium_sb = esPremium($_conexion, $_SESSION['nombre']);
+                }
+            }
+        ?>
+        <a href="<?= $path_sb ?>webcontent/comparar.php" class="font-comic text-2xl text-white hover:text-rose-800 transition-all uppercase tracking-widest flex items-center gap-3 group">
+            <span class="w-2 h-2 bg-rose-800 group-hover:w-4 transition-all"></span>
+            Comparar obras
+        </a>
+        <?php if ($es_premium_sb): ?>
+            <a href="<?= $path_sb ?>webcontent/escaner.php" class="font-comic text-2xl text-yellow-500 hover:text-rose-800 transition-all uppercase tracking-widest flex items-center gap-3 group">
+                <span class="w-2 h-2 bg-yellow-500 group-hover:w-4 transition-all"></span>
+                Escáner ★
+            </a>
+        <?php endif; ?>
+        <a href="<?= $path_sb ?>sesion/favoritos.php" class="font-comic text-2xl text-white hover:text-rose-800 transition-all uppercase tracking-widest flex items-center gap-3 group">
+            <span class="w-2 h-2 bg-rose-800 group-hover:w-4 transition-all"></span>
+            Mis Favoritos
+        </a>
+        <a href="<?= $path_sb ?>sesion/listas.php" class="font-comic text-2xl text-white hover:text-rose-800 transition-all uppercase tracking-widest flex items-center gap-3 group">
+            <span class="w-2 h-2 bg-rose-800 group-hover:w-4 transition-all"></span>
+            Mis Listas
+        </a>
         <a href="pricing.php" class="font-comic text-2xl text-white hover:text-rose-800 transition-all uppercase tracking-widest flex items-center gap-3 group">
             <span class="w-2 h-2 bg-rose-800 group-hover:w-4 transition-all"></span>
             Planes y precios

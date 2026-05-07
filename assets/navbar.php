@@ -16,6 +16,7 @@ $path = ($pagina_actual == 'index.php') ? "" : "../";
             <a href="<?= $path ?>webcontent/comics.php" class="<?= ($pagina_actual == 'comics.php') ? 'text-rose-800' : 'hover:text-rose-800' ?> hover:text-white-800 transition-colors uppercase tracking-widest">Comics</a>
             <a href="<?= $path ?>webcontent/mangas.php" class="<?= ($pagina_actual == 'mangas.php') ? 'text-rose-800' : 'hover:text-rose-800' ?> hover:text-white-800 transition-colors uppercase tracking-widest">Mangas</a>
             <a href="<?= $path ?>webcontent/libros.php" class="<?= ($pagina_actual == 'libros.php') ? 'text-rose-800' : 'hover:text-rose-800' ?> hover:text-white-800 transition-colors uppercase tracking-widest">Libros</a>
+            <a href="<?= $path ?>webcontent/comparar.php" class="<?= ($pagina_actual == 'comparar.php') ? 'text-rose-800' : 'hover:text-rose-800' ?> hover:text-white-800 transition-colors uppercase tracking-widest">Comparar</a>
         </div>
         <div class="flex justify-end items-center gap-4">
             <span class="text-sm font-bold bg-yellow-500 text-black px-2 border-2 border-black hidden md:block">
