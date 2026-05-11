@@ -1,11 +1,11 @@
 <?php
 session_start();
-require "sesion/conexion_pdo.php"; 
-if (!isset($_SESSION['usuario'])) {
+require "conexion_pdo.php"; 
+if (!isset($_SESSION['nombre'])) {
     header("Location: sesion/login.php");
     exit;
 }
-$usuario = $_SESSION['usuario'];
+$usuario = $_SESSION['nombre'];
 $errores = [];
 $exito = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = "Usuario no encontrado.";
     } else {
         $bio = trim($_POST['bio'] ?? '');
+        if (strlen($bio) > 1000) {
+            $errores[] = "Has superado el maximo de caracteres de la biografia!";
+        }
         $pass        = $_POST['pass'] ?? '';
         $passConfirm = $_POST['pass_confirm'] ?? '';
         $nuevaHash   = null;
@@ -37,17 +40,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($_FILES['foto']['size'] > 2 * 1024 * 1024) {
                 $errores[] = "La imagen no puede superar 2MB.";
             } else {
-                $dirFotos = 'imagen/perfiles/';
+                $dirFotos = '../imagen/perfiles/';
                 if (!is_dir($dirFotos)) {
                     mkdir($dirFotos, 0755, true);
                 }
-                $nombreFoto = 'perfil_' . $userActual['id'] . '_' . time() . '.' . $ext;
+                $nombreFoto = 'perfil_' . $userActual['nombre'] . '_' . time() . '.' . $ext;
                 $rutaDestino = $dirFotos . $nombreFoto;
                 if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaDestino)) {
-                    if (!empty($userActual['img_perfil']) && file_exists($userActual['img_perfil'])) {
-                        unlink($userActual['img_perfil']);
+                    if (!empty($userActual['img_perfil']) && file_exists('../' . $userActual['img_perfil'])) {
+                        unlink('../' . $userActual['img_perfil']);
                     }
-                    $rutaFoto = $rutaDestino;
+                    $rutaFoto = 'imagen/perfiles/' . $nombreFoto;
                 } else {
                     $errores[] = "Error al subir la imagen.";
                 }
@@ -55,11 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (empty($errores)) {
             if ($nuevaHash) {
-                $sql = "UPDATE usuario SET biografia = ?, contrasena = ?, img_perfil = ? WHERE id = ?";
-                $params = [$bio, $nuevaHash, $rutaFoto, $userActual['id']];
+                $sql = "UPDATE usuario SET bio = ?, contrasena = ?, img_perfil = ? WHERE nombre = ?";
+                $params = [$bio, $nuevaHash, $rutaFoto, $userActual['nombre']];
             } else {
-                $sql = "UPDATE usuario SET biografia = ?, img_perfil = ? WHERE id = ?";
-                $params = [$bio, $rutaFoto, $userActual['id']];
+                $sql = "UPDATE usuario SET bio = ?, img_perfil = ? WHERE nombre = ?";
+                $params = [$bio, $rutaFoto, $userActual['nombre']];
             }
             $stmtUpdate = $_conexion->prepare($sql);
             if ($stmtUpdate->execute($params)) {
@@ -86,113 +89,133 @@ if (!$user) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control | ComicLook</title>
+    <link rel="icon" href="../comiclook_icon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../Js/ValidacionObra.js"></script>
+    <script src="../Js/FuncionesPerfil.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        .font-comic { font-family: 'Bangers', cursive; }
+        body {
+            background-color: #171717;
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
 </head>
-<body class="bg-zinc-950 text-white font-sans">
+<body class="text-white min-h-screen">
 
-    <div class="flex min-h-screen">
-        <aside class="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
-            <div class="p-6">
-                <img src="logos/logoLight.webp" class="h-8 w-auto" alt="ComicLook">
-            </div>
-            
-            <nav class="flex-1 px-4 space-y-2">
-                <a href="user.php" class="flex items-center gap-3 bg-rose-800 text-white px-4 py-3 rounded-xl font-bold">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Mi Perfil
-                </a>
-                <a href="" class="flex items-center gap-3 text-zinc-400 hover:text-white hover:bg-zinc-800 px-4 py-3 rounded-xl transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="m9 12 2 2 4-4"/></svg>
-                    Mis Reseñas
-                </a>
-                <a href="index.php" class="flex items-center gap-3 text-zinc-400 hover:text-white hover:bg-zinc-800 px-4 py-3 rounded-xl transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    Volver a Inicio
-                </a>
-            </nav>
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <?php include '../assets/sidebar_dashboard.php'; ?>
 
-            <div class="p-4 border-t border-zinc-800">
-                <a href="sesion/logout.php" class="flex items-center gap-3 text-rose-500 hover:bg-rose-500/10 px-4 py-3 rounded-xl transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                    Cerrar Sesión
-                </a>
-            </div>
-        </aside>
+        <main class="flex-1 p-6 md:p-12 overflow-y-auto">
+            <h1 class="font-comic text-5xl md:text-6xl uppercase italic drop-shadow-[4px_4px_0_black] mb-10 text-white">Ajustes de Cuenta</h1>
 
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold mb-8">Ajustes de Cuenta</h1>
-
-            <!-- ─── MENSAJES DE FEEDBACK ─── -->
-            <?php if ($exito){ ?>
-                <div class="mb-6 flex items-center gap-3 bg-green-900/40 border border-green-700 text-green-400 px-5 py-4 rounded-xl">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <?php if ($exito): ?>
+                <div class="bg-green-500 text-black font-bold uppercase p-4 border-4 border-black shadow-[6px_6px_0_0_black] mb-8">
                     <?= htmlspecialchars($exito) ?>
                 </div>
-            <?php }; ?>
+            <?php endif; ?>
 
-            <?php if (!empty($errores)){ ?>
-                <div class="mb-6 bg-rose-900/40 border border-rose-700 text-rose-400 px-5 py-4 rounded-xl space-y-1">
-                    <?php foreach ($errores as $err){ ?>
-                        <p class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            <?= htmlspecialchars($err) ?>
-                        </p>
-                    <?php }; ?>
+            <?php if (!empty($errores)): ?>
+                <div class="bg-rose-800 text-white font-bold uppercase p-4 border-4 border-black shadow-[6px_6px_0_0_black] mb-8">
+                    <?php foreach ($errores as $err): ?>
+                        <p class="mb-1">⚠ <?= htmlspecialchars($err) ?></p>
+                    <?php endforeach; ?>
                 </div>
-            <?php }; ?>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-6">
-                    <form action="user.php" method="POST" enctype="multipart/form-data" class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 space-y-6">
-                        <div class="flex items-center gap-6 pb-6 border-b border-zinc-800">
-                            <div class="w-24 h-24 bg-zinc-800 rounded-full overflow-hidden border-2 border-rose-800">
-                                <img src="<?= htmlspecialchars($user['img_perfil'] ?: 'imagen/pordefecto.jpg') ?>" class="w-full h-full object-cover" alt="Foto de perfil">
+            <?php endif; ?>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                
+                <div class="lg:col-span-2 bg-yellow-500 text-black border-8 border-black p-8 shadow-[12px_12px_0_0_black]">
+                    <form action="user.php" method="POST" enctype="multipart/form-data" class="space-y-8">
+                        
+                        <div class="flex flex-col md:flex-row items-center gap-8 border-b-4 border-black pb-8">
+                            <div class="relative w-40 h-40 bg-neutral-800 border-4 border-black shadow-[6px_6px_0_0_black] overflow-hidden group cursor-pointer" 
+                                onclick="document.getElementById('foto-input').click()">
+                                <img id="img-perfil" 
+                                    src="../<?= htmlspecialchars($user['img_perfil'] ?: 'imagen/perfiles/perfil__1774513912.png') ?>" 
+                                    alt="Foto de perfil" 
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                <div class="hidden flex-col items-center justify-center w-full h-full bg-neutral-800 text-neutral-600">
+                                    <svg class="w-16 h-16 drop-shadow-[2px_2px_0_black]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="font-comic text-xs uppercase mt-1">¿Quién eres?</span>
+                                </div>
+                                <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Cambiar foto de perfil</label>
-                                <input type="file" name="foto" accept="image/*" class="text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-rose-800 file:text-white hover:file:bg-rose-700">
-                                <p class="text-xs text-zinc-600 mt-1">JPG, PNG, WEBP · Máx. 2MB</p>
+                            <div class="flex-1 space-y-3">
+                                <label class="font-comic text-2xl uppercase italic">Cambiar foto de perfil</label>
+                                <input id="foto-input" type="file" name="foto" accept="image/*" class="hidden">
+                                <button type="button" onclick="document.getElementById('foto-input').click()" 
+                                        class="w-full bg-black text-white font-bold uppercase py-3 border-4 border-black hover:bg-neutral-800 transition-all active:translate-y-1">
+                                    Seleccionar archivo
+                                </button>
+                                <p class="text-[10px] font-black uppercase tracking-widest">JPG, PNG, WEBP · MÁX. 2MB</p>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Biografía</label>
-                            <textarea name="bio" rows="4" maxlength="500" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 focus:border-rose-500 outline-none transition-colors resize-none"><?= htmlspecialchars($user['biografia'] ?? '') ?></textarea>
+
+                        <div class="space-y-2">
+                            <label for="bio-textarea" class="font-comic text-2xl uppercase italic">Biografía</label>
+                            <textarea name="bio" id="bio-textarea" rows="4" maxlength="1200" 
+                                      class="w-full border-4 border-black p-4 font-bold focus:outline-none focus:bg-white transition-colors text-black placeholder-neutral-600"
+                                      placeholder="CUÉNTA TU HISTORIA..."><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Nueva Contraseña</label>
-                                <input type="password" name="pass" placeholder="Dejar en blanco para mantener" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 focus:border-rose-500 outline-none">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-4 border-black">
+                            <div class="space-y-2">
+                                <label class="font-bold uppercase text-xs">Nueva Contraseña</label>
+                                <input type="password" name="pass" placeholder="Escribe tu nueva contraseña" 
+                                       class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:bg-white text-black placeholder-neutral-600">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Confirmar Contraseña</label>
-                                <input type="password" name="pass_confirm" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 focus:border-rose-500 outline-none">
+                            <div class="space-y-2">
+                                <label class="font-bold uppercase text-xs">Confirmar Contraseña</label>
+                                <input type="password" name="pass_confirm" 
+                                       class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:bg-white text-black">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-rose-800 hover:bg-rose-700 py-3 rounded-lg font-bold transition-colors">
-                            Guardar Cambios
+
+                        <button type="submit" 
+                                class="w-full bg-rose-800 text-white font-comic text-3xl py-4 border-4 border-black shadow-[8px_8px_0_0_black] hover:bg-rose-900 transition-all hover:scale-105 active:translate-y-1 active:shadow-none uppercase italic">
+                            ¡GUARDAR CAMBIOS!
                         </button>
                     </form>
                 </div>
-                <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 h-fit">
-                    <h2 class="text-xl font-bold mb-6">Tus últimas reseñas</h2>
-                    <div class="space-y-4">
+
+                <div class="space-y-8">
+                    <h2 class="font-comic text-4xl uppercase italic drop-shadow-[2px_2px_0_black]">Tus reseñas</h2>
+                    <div class="space-y-6">
                         <?php
                         $sql_res = "SELECT r.*, o.titulo, o.portada 
                                     FROM resena r 
                                     JOIN obra o ON r.id_obra = o.id 
-                                    WHERE r.id_usuario = ? 
+                                    WHERE r.nombre_usuario = ? 
                                     ORDER BY r.fecha_public DESC LIMIT 3";
                         $stmt_res = $_conexion->prepare($sql_res);
-                        $stmt_res->execute([$user['id']]);
+                        $stmt_res->execute([$user['nombre']]);
                         $resenas = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
+                        
                         if (empty($resenas)){ ?>
-                            <p class="text-zinc-500 text-sm">Aún no has escrito ninguna reseña.</p>
+                            <div class="bg-black text-white p-6 border-4 border-black shadow-[6px_6px_0_0_white] italic uppercase font-bold text-xs text-center">
+                                AÚN NO HAS ESCRITO NADA... ¡VE AL CATÁLOGO!
+                            </div>
                         <?php }else{
                             foreach ($resenas as $resena){ ?>
-                                <div class="flex gap-4 p-3 bg-zinc-950 rounded-xl border border-zinc-800">
+                                <div class="flex gap-4 p-4 bg-white text-black border-4 border-black shadow-[8px_8px_0_0_black] hover:rotate-1 transition-transform">
+                                    <img src="../<?= htmlspecialchars($resena['portada']) ?>" 
+                                         class="w-16 h-24 object-cover border-2 border-black" 
+                                         alt="<?= htmlspecialchars($resena['titulo']) ?>">
                                     <div class="min-w-0">
-                                        <h4 class="text-sm font-bold truncate"><?= htmlspecialchars($resena['titulo']) ?></h4>
-                                        <div class="text-rose-500 text-xs">★ <?= htmlspecialchars($resena['puntuacion']) ?>/5</div>
-                                        <p class="text-[10px] text-zinc-500 mt-1 line-clamp-2"><?= htmlspecialchars($resena['comentario']) ?></p>
+                                        <h4 class="font-black text-sm uppercase truncate mb-1"><?= htmlspecialchars($resena['titulo']) ?></h4>
+                                        <div class="bg-yellow-500 text-black font-bold px-2 inline-block border-2 border-black text-[10px] italic mb-1">
+                                            ★ <?= htmlspecialchars($resena['puntuacion']) ?>/5
+                                        </div>
+                                        <p class="text-[10px] font-bold text-neutral-600 uppercase leading-tight line-clamp-3 italic">
+                                            "<?= htmlspecialchars($resena['comentario']) ?>"
+                                        </p>
                                     </div>
                                 </div>
                             <?php };
@@ -202,5 +225,6 @@ if (!$user) {
             </div>
         </main>
     </div>
+
 </body>
 </html>
