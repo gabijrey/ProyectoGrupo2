@@ -99,7 +99,8 @@ INSERT INTO obra (titulo, descripcion, genero, anno_lanzamiento, portada, tipo, 
 ('Jujutsu Kaisen Vol. 1', 'Un joven se traga un dedo maldito y entra en el mundo de los hechiceros.', 'Shonen', 2018, 'imagen/img_obras/mangas/jjk_1.jpg', 1, 'Norma Editorial'),
 ('Jujutsu Kaisen 0', 'La precuela que explica el origen de las maldiciones más fuertes.', 'Shonen', 2017, 'imagen/img_obras/mangas/jjk_0.jpg', 1, 'Norma Editorial'),
 ('Jujutsu Kaisen Vol. 26', 'La batalla culminante en Shinjuku llega a su punto crítico.', 'Shonen', 2024, 'imagen/img_obras/mangas/jjk_26.jpg', 1, 'Norma Editorial'),
-('All You Need is Kill', 'Un soldado atrapado en un bucle temporal luchando contra aliens.', 'Seinen', 2014, 'imagen/img_obras/mangas/all_kill.jpg', 1, 'Norma Editorial');
+('All You Need is Kill', 'Un soldado atrapado en un bucle temporal luchando contra aliens.', 'Seinen', 2014, 'imagen/img_obras/mangas/all_kill.jpg', 1, 'Norma Editorial'),
+('Solo Leveling 11', 'Tras derrotar a Hwang Dongsu, Sung Jinwoo declara abiertamente que protegerá a toda costa a familia y amigos, y quien se interponga en este camino, será aniquilado, sea monstruo o cazador. No obstante, con la aparición de nuevos enemigos, es difícil cumplir sus palabras. Se abre así el telón de una nueva batalla contra los denominados "Señores"', 'Manhwa', 2025, 'imagen/img_obras/mangas/solo_leveling_11.jpg', 1, 'Norma Editorial', 9788467975154);
 
 -- ==============================================================================
 -- 4. CATEGORÍA: CÓMICS (TIPO 3) - 33 Obras
@@ -120,6 +121,7 @@ INSERT INTO obra (titulo, descripcion, genero, anno_lanzamiento, portada, tipo, 
 ('Infinity War', 'Magus, la mitad malvada de Adam Warlock, amenaza con conquistar el universo.', 'Superhéroes', 1992, 'imagen/img_obras/comics/infinity_war.jpg', 0, 'Astiberri'),
 ('Aniquilación', 'Una ola destructiva desde la Zona Negativa asola el cosmos de Marvel.', 'Ciencia Ficción', 2006, 'imagen/img_obras/comics/annihilation.jpg', 0, 'Panini España'),
 ('Planet Hulk', 'Hulk es exiliado al espacio y se convierte en gladiador en Sakaar.', 'Superhéroes', 2006, 'imagen/img_obras/comics/planet_hulk.jpg', 0, 'Astiberri'),
+('Daredevil: Sospechosos Excepcionales', 'Daredevil viaja al pequeño pueblo de Redemption Valley para llevar a cabo una investigación y se aliará con Spider-Man para luchar contra una banda de supervillanos.', 'Superhéroes', 2022, 'imagen/img_obras/comics/daredevil_se.jpg', 0, 'Panini España', 9788411014731),
 ('Hellblazer: Hábitos Peligrosos', 'John Constantine es diagnosticado con cáncer de pulmón e intenta engañar al diablo.', 'Terror', 1991, 'imagen/img_obras/comics/hellblazer_1.jpg', 0, 'Norma Editorial'),
 ('Predicador Vol. 2', 'Jesse Custer se enfrenta a los pervertidos secretos de su propia familia.', 'Terror', 1996, 'imagen/img_obras/comics/preacher_2.jpg', 0, 'Panini España'),
 ('Fábulas Vol. 1', 'Los personajes de cuentos de hadas viven exiliados en el Nueva York moderno.', 'Fantasía', 2002, 'imagen/img_obras/comics/fables_1.jpg', 0, 'Norma Editorial'),
