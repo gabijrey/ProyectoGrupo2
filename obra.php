@@ -2,14 +2,14 @@
 session_start();
 
 if (!isset($_SESSION['nombre'])) {
-    header("Location: sesion/login.php");
+    header("Location: ../sesion/login.php");
     exit();
 }
 //Si llega aquí, es que está logueado
-require __DIR__ . "/sesion/conexion_pdo.php";
+require __DIR__ . "/../sesion/conexion_pdo.php";
 //Comprobar que se ha pasado un ID válido por GET
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php");
+    header("Location: ../index.php");
     exit();
 }
 //Obtener el ID de la obra y cargar sus datos
@@ -23,7 +23,7 @@ try {
 }
 //Si no se encuentra la obra, redirigir al inicio
 if (!$obra) {
-    header("Location: index.php");
+    header("Location: ../index.php");
     exit();
 }
 //Guardar reseña
@@ -49,6 +49,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resena_texto'])) {
             die("Error en la inserción ". $e->getMessage());
         }
     }
+
+}
+
+//Editar la reseña existente
+if($_SERVER["REQUEST_METHOD"] === 'POST' && isset($_POST["id_resena_editar"])) {
+    $id_editar = (int)$_POST["id_resena_editar"];
+    $comentario = trim($_POST["resena_editada"]);
+    $puntuacion = (int)($_POST["puntuacion_editada"] ?? 5);
+
+    //Verificar si no esta vacio
+    if(isset($_SESSION["nombre"]) && $comentario !== "") {
+        try {
+            $upd = $_conexion->prepare( "UPDATE resena 
+                    SET comentario = :comentario,
+                        puntuacion = :puntuacion,
+                        fecha_public = NOW(),
+                        editada = 1
+                    WHERE id = :id AND nombre_usuario = :usuario"
+            );
+            $upd->execute([
+                'comentario' => $comentario,
+                'puntuacion' => $puntuacion,
+                'id' => $id_editar,
+                'usuario' => $_SESSION["nombre"]
+            ]);
+            //Redirigir
+            header("Location: obra.php?id=$id_obra&status=editada");
+            exit();
+
+        }
+        catch(PDOException $e) {
+            die("Error al editar la reseña".$e->getMessage());
+        }
+    }
+}
+
+//Eliminar reseña
+if(isset($_GET['eliminar_id'])) {
+    $borrar_id = $_GET['eliminar_id'];
+    try {
+        $stmt_borrar = $_conexion->prepare("DELETE FROM resena WHERE id = :id AND nombre_usuario = :usuario");
+        $stmt_borrar->execute([
+            'id' => $borrar_id,
+            'usuario' => $_SESSION['nombre']
+        ]);
+        //Limpiar URL redirigiendo al usuario
+        header("Location: obra.php?id=$id_obra&status=borrado");
+        exit();
+    }
+    catch(Exception $e) {
+        die("Error al eliminar");
+    }
+}
+
+
+//Comprobar si la obra está añadida a favs
+$es_favorito = false;
+try {
+    $stmt_fav = $_conexion->prepare("SELECT 1 FROM favorito WHERE id_obra = :id_obra AND nombre_usuario = :usuario");
+    $stmt_fav->execute([
+        "id_obra" => $id_obra,
+        "usuario" => $_SESSION["nombre"]
+    ]);
+    if($stmt_fav->fetch()) {
+        $es_favorito = true;
+    }
+}
+catch(PDOException $e) {}
+
+//Mostrar las listas del usuario
+$menu_listas = [];
+try {
+    $consulta_listas = "SELECT id, titulo FROM lista WHERE nombre_usuario = :usuario ORDER BY titulo ASC";
+    $stmt_listas = $_conexion->prepare($consulta_listas);
+    $stmt_listas->execute([
+        'usuario' => $_SESSION['nombre'],
+    ]);
+    $menu_listas = $stmt_listas->fetchAll(PDO::FETCH_ASSOC);
+}
+catch(PDOException $e) {}
+
+
+//Crear lista y añadir la obra automáticamente
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["create_add_to_lista"])) {
+    $titulo = trim($_POST["titulo"]);
+    $descripcion = trim($_POST["descripcion"]);
+    $privacidad = (isset($_POST["privacidad"]) && $_POST["privacidad"] === "1") ? 1 : 0;
+
+    if(!empty($titulo) && isset($_SESSION["nombre"])) {
+        try {
+            $insertar_en_lista = "INSERT INTO lista (titulo, descripcion, privacidad, nombre_usuario, fecha_creacion) VALUES (:titulo, :descripcion, :privacidad, :usuario, NOW())";
+            $stmtLista = $_conexion->prepare($insertar_en_lista);
+            $stmtLista->execute([
+                'titulo' => $titulo,
+                'descripcion' => $descripcion,
+                'privacidad' => $privacidad,
+                'usuario' => $_SESSION["nombre"]
+            ]);
+
+            //Unir la lista recien creada con la obra a añadir
+            $id_nueva_lista = $_conexion->lastInsertId();
+
+            //Asociar obra con la lista en la tabla intermedia
+            $consultaAsociar = "INSERT INTO lista_obra (id_lista, id_obra) VALUES (:id_lista, :id_obra)";
+            $stmtAsociar = $_conexion->prepare($consultaAsociar);
+            $stmtAsociar->execute([
+                'id_lista' => $id_nueva_lista,
+                'id_obra' => $id_obra
+            ]);
+
+            header("Location: obra.php?id=$id_obra&lista=creada");
+            exit();
+        }
+        catch(PDOException $e) {
+            die("Error al crear y asociar la lista: ". $e->getMessage());
+        }
+    }
 }
 
 // Obtener estadísticas globales (total y media)
@@ -70,8 +187,9 @@ try {
 $resenas = [];
 try {
     $stmt2 = $_conexion->prepare("
-        SELECT r.fecha_public, r.puntuacion, r.comentario, r.nombre_usuario AS usuario
+        SELECT r.id, r.fecha_public, r.puntuacion, r.comentario, r.nombre_usuario AS usuario, r.editada, u.rol
         FROM resena r
+        LEFT JOIN usuario u ON r.nombre_usuario = u.nombre
         WHERE r.id_obra = :id
         ORDER BY r.fecha_public DESC
         LIMIT 3
@@ -96,8 +214,11 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comiclook | <?= $titulo ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="../comiclook_icon.ico">
     <script src="../Js/FormularioRegistro.js"></script>
-    <link rel="icon" href="comiclook_icon.ico">
+    <script src="../Js/FuncionesObra.js"></script>
+    <script src="../Js/FuncionesResena.js"></script>
+    <script src="../Js/ValidacionObra.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <style>
@@ -137,31 +258,17 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
     </style>
 </head>
 <body class="bg-zinc-900 text-white flex flex-col min-h-screen">
-    <nav class="bg-neutral-900 p-6 grid grid-cols-1 md:grid-cols-3 items-center border-b-8 border-black sticky top-0 z-50">
-        <div class="flex justify-start">
-            <img src="logos/logoLight.webp" class="h-10 w-auto drop-shadow-[4px_4px_0_black]" alt="Logo">
-        </div>
-        <div class="flex justify-center items-center gap-8 font-comic text-xl">
-            <a href="index.php" class="hover:text-rose-800 transition-colors uppercase tracking-widest">Inicio</a>
-            <a href="catalogo.php?tipo=0" class="hover:text-rose-800 transition-colors uppercase tracking-widest">Comics</a>
-            <a href="catalogo.php?tipo=1" class="hover:text-rose-800 transition-colors uppercase tracking-widest">Mangas</a>
-            <a href="catalogo.php?tipo=2" class="hover:text-rose-800 transition-colors uppercase tracking-widest">Libros</a>
-        </div>
-        <div class="flex justify-end items-center gap-4">
-            <span class="text-sm font-bold bg-yellow-500 text-black px-2 border-2 border-black hidden md:block">
-                HOLA, <?= strtoupper($_SESSION['nombre']) ?>
-            </span>
-            <a class="bg-rose-800 text-white px-4 py-2 border-4 border-black font-bold hover:bg-rose-900 transition-all shadow-[4px_4px_0_0_black] active:shadow-none active:translate-y-1 text-xs" href="user.php?usuario=<?= $_SESSION['nombre'] ?>">MI CUENTA</a>
-            <a class="bg-black text-white px-4 py-2 border-4 border-black font-bold hover:bg-neutral-800 transition-all text-xs" href="sesion/logout.php">LOGOUT</a>
-        </div>
-    </nav>
+
+<?php include '../assets/navbar.php'?>
+<?php include '../assets/sidebar.php'?>
+
 <section class="relative bg-rose-800 border-b-8 border-black p-10 flex justify-center min-h-[400px]">
     <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 16px 16px;"></div>
     <div class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row gap-10 items-center md:items-end">
         <div class="flex-shrink-0 fade-up z-20">
             <div class="bg-white p-3 border-4 border-black shadow-[12px_12px_0_0_black]">
                 <?php if ($portada){ ?>
-                    <img src="<?= $portada ?>" alt="<?= $titulo ?>"
+                    <img src="../<?= $portada ?>" alt="<?= $titulo ?>"
                         class="w-48 md:w-64 h-auto border-4 border-black object-cover">
                 <?php }else{?>
                     <div class="w-48 md:w-64 h-80 border-4 border-black bg-zinc-200 flex items-center justify-center text-black font-comic text-2xl uppercase text-center p-4">
@@ -172,17 +279,79 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
         </div>
         <div class="flex flex-col gap-4 fade-up delay-1 bg-neutral-900 border-4 border-black p-6 md:p-8 shadow-[8px_8px_0_0_black] w-full">
             <div class="text-xs font-bold flex flex-wrap items-center gap-2 uppercase tracking-widest border-b-4 border-black pb-3">
-                <a href="index.php" class="hover:text-rose-600 transition-colors">Inicio</a>
+                <a href="../index.php" class="hover:text-rose-600 transition-colors">Inicio</a>
                 <span class="text-rose-800 font-comic text-lg leading-none">></span>
-                <a href="catalogo.php?tipo=<?= $obra['tipo'] ?>" class="hover:text-rose-600 transition-colors"><?= $tipo_label ?>s</a>
+                <?php
+                if($obra["tipo"] == 0) {
+                $linkObra = "comics.php";
+                } 
+                elseif ($obra["tipo"] == 1) {
+                   $linkObra = "mangas.php"; 
+                }
+                else {
+                    $linkObra = "libros.php";
+                }
+                ?>
+                <a href="<?= $linkObra ?>" class="hover:text-rose-600 transition-colors"><?= $tipo_label ?>s</a>
                 <span class="text-rose-800 font-comic text-lg leading-none">></span>
                 <span class="text-zinc-500"><?= $titulo ?></span>
             </div>
-            <div class="flex flex-wrap gap-3 mt-2">
+            <div class="flex flex-wrap gap-3 mt-2 items-center">
                 <span class="bg-yellow-500 text-black border-2 border-black font-comic px-4 py-1 uppercase tracking-widest shadow-[3px_3px_0_0_black]"><?= $tipo_label ?></span>
                 <?php if ($genero){ ?>
                     <span class="bg-rose-800 text-white border-2 border-black font-comic px-4 py-1 uppercase tracking-widest shadow-[3px_3px_0_0_black]"><?= $genero ?></span>
                 <?php } ?>
+                 <!-- Botón Corazón Favoritos -->
+                <button onclick="toggleFavorito(<?= $id_obra ?>)" class="ml-2 focus:outline-none transition-transform hover:scale-110 active:scale-95">
+                    <svg id="heart-icon" xmlns="http://www.w3.org/2000/svg" 
+                         class="h-8 w-8 transition-colors duration-200 cursor-pointer drop-shadow-[2px_2px_0_rgba(0,0,0,1)] text-white" 
+                         fill="<?= $es_favorito ? '#e11d48' : 'none' ?>" 
+                         viewBox="0 0 24 24" 
+                         stroke="currentColor" 
+                         stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+                <!-- Botón Añadir a Lista -->
+                <div id="contenedor-listas" class="relative">
+                    <button onclick="toggleModalListas()" class="ml-2 focus:outline-none transition-transform hover:scale-110 active:scale-95" title="Añadir a lista">
+                        <!-- Icono de Hoja de Papel con + -->
+                        <svg class="h-8 w-8 text-white drop-shadow-[2px_2px_0_rgba(0,0,0,1)] cursor-pointer transition-colors hover:text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Contorno del papel (dejando hueco abajo a la derecha) -->
+                            <path d="M19 13V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path>
+                            <!-- Las 3 líneas de texto -->
+                            <line x1="9" y1="8" x2="15" y2="8"></line>
+                            <line x1="9" y1="12" x2="15" y2="12"></line>
+                            <line x1="9" y1="16" x2="12" y2="16"></line>
+                            <!-- El símbolo + -->
+                            <line x1="19" y1="16" x2="19" y2="22"></line>
+                            <line x1="16" y1="19" x2="22" y2="19"></line>
+                        </svg>
+                    </button>
+                    
+                    <!-- Menú Desplegable (Oculto por defecto) -->
+                    <div id="modal-listas" class="absolute top-full right-0 mt-2 w-56 bg-neutral-900 border-4 border-black shadow-[6px_6px_0_0_black] z-50 hidden">
+                        <div class="bg-rose-800 text-white font-comic text-center p-2 border-b-4 border-black uppercase text-sm tracking-widest">Añadir a...</div>
+                        <ul class="max-h-48 overflow-y-auto">
+                            <?php if (empty($menu_listas)) { ?>
+                                <li class="p-3 text-xs text-zinc-400 text-center font-bold uppercase">No tienes listas aún.</li>
+                            <?php } else { ?>
+                                <?php foreach($menu_listas as $lista_menu) { ?>
+                                    <li>
+                                        <button onclick="addObraToLista(<?= $id_obra ?>, <?= $lista_menu['id'] ?>)" class="w-full text-left px-4 py-2 text-sm text-white font-bold hover:bg-yellow-500 hover:text-black border-b-2 border-zinc-800 transition-colors uppercase truncate">
+                                            <?= htmlspecialchars($lista_menu['titulo']) ?>
+                                        </button>
+                                    </li>
+                                <?php } ?>
+                            <?php } ?>
+                        </ul>
+                        <div class="border-t-4 border-black">
+                            <button onclick="abrirModalCrearLista()" class="w-full text-center bg-black text-yellow-500 font-comic text-lg uppercase tracking-widest px-4 py-2 hover:bg-neutral-800 transition-colors">
+                                Nueva Lista +
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <h1 class="font-comic text-5xl md:text-7xl uppercase drop-shadow-[3px_3px_0_black] italic mt-2 leading-none">
                 <?= $titulo ?>
@@ -295,16 +464,43 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
                                         die();
                                     }
                                     ?>
-                                    <img src="<?= $img_perfil['img_perfil'] ?? 'default-avatar.png' ?>" alt="Perfil" class="object-cover">
+                                    <img src="../<?= $img_perfil['img_perfil'] ?? 'default-avatar.png' ?>" alt="Perfil" class="object-cover">
                                 </div>
-                                <span class="font-comic text-base uppercase tracking-widest text-white">@<?= htmlspecialchars($resena['usuario'] ?? 'user' . $resena['id_usuario']) ?></span>
+                                <span class="font-comic text-base uppercase tracking-widest text-white flex items-center gap-1">
+                                    @<?= htmlspecialchars($resena['usuario'] ?? 'user' . $resena['id_usuario']) ?>
+                                    <?php if(isset($resena['rol']) && in_array($resena['rol'], [1, 2])): ?>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 ml-1 animate-pulse <?= $resena['rol'] == 1 ? 'text-yellow-400' : 'text-cyan-400' ?> drop-shadow-[1px_1px_0_black]" title="<?= $resena['rol'] == 1 ? 'Premium' : 'Autor' ?>">
+                                            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+                                        </svg>
+                                    <?php endif; ?>
+                                </span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="bg-black border-2 border-zinc-700 px-2 py-0.5 flex items-center gap-0.5">
                                     <span class="text-rose-500 text-sm"><?= str_repeat('★', $estrellas) ?></span><span class="text-zinc-700 text-sm"><?= str_repeat('★', 5 - $estrellas) ?></span>
                                 </div>
-                                <span class="font-comic text-xs text-zinc-500 uppercase tracking-wider"><?= date('d/m/Y', strtotime($resena['fecha_public'])) ?></span>
+                                <span class="font-comic text-xs text-zinc-400 uppercase tracking-wider"><?= date('d/m/Y', strtotime($resena['fecha_public'])) ?>
+                                <?php if ($resena['editada'] == 1) {?>
+                                    <span class="text-zinc-500 lowercase ml-1">(editado)</span>
+                                <?php } ?>
+                            </span>
                             </div>
+                            <?php if ($_SESSION['nombre'] === $resena['usuario']){ ?>
+                            <div class="relative group ml-auto"> <!-- El ml-auto lo empujará a la derecha -->
+                                <button onclick="toggleMenuResena(<?= $resena['id']?>)" class="text-zinc-500 hover:text-white p-1 transition-colors">
+                                    <!-- Icono de 3 puntos (opcional) o simplemente texto -->
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                    </svg>
+                                </button>
+                                
+                                <!-- Menú desplegable -->
+                                <div id="menu-resena-<?= $resena['id']?>" class="absolute right-0 mt-2 w-40 bg-neutral-900 border-4 border-black shadow-[4px_4px_0_0_black] z-20 hidden">
+                                    <a href="javascript:void(0)" onclick="modalEditarResena(<?= $resena['id'] ?>, '<?= addslashes(htmlspecialchars($resena['comentario'])) ?>', <?= $resena['puntuacion'] ?>, <?= $id_obra ?>)" class="block px-4 py-2 text-[10px] uppercase font-bold hover:bg-rose-800 transition-colors">Editar Reseña</a>
+                                    <a href="javascript:void(0)" onclick="mensajeConfirmacion('?id=<?= $id_obra ?>&eliminar_id=<?= $resena['id'] ?>')" class="block px-4 py-2 text-[10px] uppercase font-bold text-rose-500 hover:bg-rose-800 hover:text-white transition-colors border-t-2 border-black">Eliminar</a>
+                                </div>
+                            </div>
+                            <?php } ?>
                         </div>
                         <p class="text-zinc-300 text-sm leading-relaxed border-l-4 border-rose-800 pl-4"><?= nl2br(htmlspecialchars($resena['comentario'])) ?></p>
                     </article>
@@ -360,11 +556,10 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
         </div>
     </aside>
 </main>
-<footer class="bg-black w-full border-t-8 border-rose-800 py-10 px-6 text-center">
-    <div class="inline-block bg-yellow-500 p-2 border-4 border-black shadow-[6px_6px_0_0_white]">
-        <p class="text-sm text-black font-black uppercase tracking-widest">© 2026 TFG DAW - PROYECTO COMICLOOK </p>
-    </div>
-</footer>
+    
+<!-- Footer -->
+<?php include "../assets/footer.php"?>
+
 <div id="event-widget" class="fixed bottom-6 right-6 z-50 max-w-xs bg-white border-4 border-black shadow-[10px_10px_0_0_#9f1239] overflow-hidden transform transition-all hover:scale-105">
     <div class="bg-black px-4 py-2 text-[12px] font-comic text-yellow-500 uppercase tracking-widest flex justify-between items-center">
         <span>¡AVISO ESPECIAL!</span>
@@ -387,5 +582,74 @@ $portada = htmlspecialchars($obra['portada'] ?? '');
         </div>
     </div>
 </div>
+<!-- MODAL CREAR NUEVA LISTA -->
+    <div id="modal-crear-lista" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4">
+        
+        <form method="POST" action="obra.php?id=<?= $id_obra ?>" class="bg-neutral-900 border-4 border-black p-8 shadow-[8px_8px_0_0_black] flex flex-col gap-5 w-full max-w-md relative">
+            
+            <!-- Botón de Cerrar (X) -->
+            <button type="button" onclick="cerrarModalCrearLista()" class="absolute top-4 right-6 text-zinc-500 font-comic text-2xl hover:text-rose-500 transition-colors">
+                X
+            </button>
+            
+            <h2 class="font-comic text-3xl text-yellow-500 uppercase border-b-4 border-black pb-2 mt-2">Crear Nueva Lista</h2>
+            
+            <!-- Input oculto para que el PHP sepa que venimos de aquí -->
+            <input type="hidden" name="create_add_to_lista" value="1">
+            
+            <!-- Título -->
+            <div>
+                <label class="block font-bold text-xs uppercase tracking-widest text-zinc-400 mb-1">Título</label>
+                <input type="text" name="titulo" required placeholder="Ej: Mis lecturas de verano..." class="w-full bg-black border-4 border-zinc-700 focus:border-yellow-500 focus:outline-none px-4 py-2 text-white transition-colors">
+            </div>
+            
+            <!-- Descripción -->
+            <div>
+                <label class="block font-bold text-xs uppercase tracking-widest text-zinc-400 mb-1">Descripción</label>
+                <textarea name="descripcion" rows="3" placeholder="¿De qué va esta lista?" class="w-full bg-black border-4 border-zinc-700 focus:border-yellow-500 focus:outline-none px-4 py-2 text-white resize-none transition-colors"></textarea>
+            </div>
+            
+            <!-- Privacidad -->
+            <div>
+                <label class="block font-bold text-xs uppercase tracking-widest text-zinc-400 mb-3">Privacidad</label>
+                <div class="flex flex-col gap-3">
+                    <!-- Pública -->
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="privacidad" value="0" checked class="hidden peer">
+                        <div class="w-5 h-5 border-2 border-zinc-500 peer-checked:border-blue-500 peer-checked:bg-blue-500 rounded-full flex items-center justify-center transition-all shadow-[2px_2px_0_0_black]"></div>
+                        <span class="text-zinc-400 peer-checked:text-blue-500 font-bold uppercase transition-colors flex items-center gap-2">
+                            <!-- Icono Planeta -->
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                            Pública
+                        </span>
+                    </label>
+                    
+                    <!-- Privada -->
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="radio" name="privacidad" value="1" class="hidden peer">
+                        <div class="w-5 h-5 border-2 border-zinc-500 peer-checked:border-rose-600 peer-checked:bg-rose-600 rounded-full flex items-center justify-center transition-all shadow-[2px_2px_0_0_black]"></div>
+                        <span class="text-zinc-400 peer-checked:text-rose-500 font-bold uppercase transition-colors flex items-center gap-2">
+                            <!-- Icono Candado -->
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            Privada
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="mt-4 bg-yellow-500 text-black font-comic text-xl uppercase tracking-widest px-4 py-3 border-4 border-black shadow-[6px_6px_0_0_black] hover:bg-yellow-400 active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                Crear y añadir
+            </button>
+        </form>
+    </div>
+    <?php if(isset($_GET["lista"]) && $_GET["lista"] == "creada") {?>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                mostrarNotificacion("¡Lista creada y obra añadida!", "exito");
+
+                window.history.replaceState(null, null, window.location.pathname + "?id=<?= $id_obra ?>");
+            })
+        </script>
+    <?php }?>
 </body>
 </html>

@@ -17,11 +17,11 @@ try {
     $total_pages = ceil($total_users / $limit);
 
     // 2. Obtener los usuarios de la página actual con su contador de reseñas
-    $sql_users = "SELECT u.nombre, u.img_perfil, COUNT(r.id) as total_resenas 
+    $sql_users = "SELECT u.nombre, u.img_perfil, u.rol, COUNT(r.id) as total_resenas 
                   FROM usuario u 
                   LEFT JOIN resena r ON u.nombre = r.nombre_usuario 
                   WHERE u.nombre LIKE :query 
-                  GROUP BY u.nombre, u.img_perfil 
+                  GROUP BY u.nombre, u.img_perfil, u.rol
                   ORDER BY u.nombre ASC 
                   LIMIT :limit OFFSET :offset";
     
